@@ -1,4 +1,4 @@
-"numpy<1.24" 
+numpy<1.24
 torch 
 torchvision 
 cython_bbox 
