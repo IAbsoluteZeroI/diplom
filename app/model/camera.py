@@ -36,8 +36,7 @@ class Camera:
             text_thickness=1,
             text_scale=0.5,
             video_info=self.video_info
-        ),
-
+        )
         self.generator = get_video_frames_generator(self.video_path)
 
     def get_time_now(self) -> datetime:
