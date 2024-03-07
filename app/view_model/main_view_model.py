@@ -4,7 +4,7 @@ from ..model.reactive_model import ReactiveModel
 class MainViewModel(ReactiveModel):
     state: str
     command: str
-    tracking_info: str
+    tracking_info: dict
 
     def set_state(self, state: str):
         self.state = state
