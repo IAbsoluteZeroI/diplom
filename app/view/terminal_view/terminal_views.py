@@ -44,5 +44,5 @@ class SampleVideoTracking:
         print(view_model.get_tracking_info())
 
     def __wait_for_input(self):
-        input("Нажмите ENTER.")
+        input("Нажмите ENTER...")
         view_model.set_state("menu")
