@@ -18,5 +18,6 @@ class MainViewModel(ReactiveModel):
     def set_tracking_info(self, tracking_info: str):
         self.tracking_info = tracking_info
 
+
 view_model = MainViewModel()
 view_model.state = "menu"

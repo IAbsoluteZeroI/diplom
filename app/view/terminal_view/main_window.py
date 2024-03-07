@@ -16,17 +16,17 @@ class MainWindow(ITerminal):
         view_model.on_change("command", lambda command: self.__check_command())
 
         self.__current_view = MenuView(self)
-    
+
     def close(self):
         self.clear()
         sys.exit()
-    
+
     def clear(self):
         # Проверка операционной системы
-        if os.name == 'nt':  # Windows
-            os.system('cls')
+        if os.name == "nt":  # Windows
+            os.system("cls")
         else:  # Linux/MacOS
-            os.system('clear')
+            os.system("clear")
 
     def __check_state(self):
         if view_model.state == "menu":
@@ -39,4 +39,8 @@ class MainWindow(ITerminal):
             # self.close()
             return ExitCommand(self).execute()
         if view_model.command == "sample_video_tracking":
-            view_model.set_tracking_info(TrackSampleVideoCommand(video_path='test.avi', line_coords=[[1100, 230],[1200, 750]]).execute())
+            view_model.set_tracking_info(
+                TrackSampleVideoCommand(
+                    video_path="test.avi", line_coords=[[1100, 230], [1200, 750]]
+                ).execute()
+            )

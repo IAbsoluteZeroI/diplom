@@ -24,9 +24,9 @@ class TrackSampleVideoCommand(ICommand):
             id=1,
             aud=21,
             line_counter=CustomLineCounter(
-                Point(self.__line_coords[1][0],self.__line_coords[1][1]),
-                Point(self.__line_coords[0][0],self.__line_coords[0][1]),
-                classes=CLASS_ID
-                ),
-            video_path = self.__video_path
-            ).track_video('result.mp4')
+                Point(self.__line_coords[1][0], self.__line_coords[1][1]),
+                Point(self.__line_coords[0][0], self.__line_coords[0][1]),
+                classes=CLASS_ID,
+            ),
+            video_path=self.__video_path,
+        ).track_video("result.mp4")
