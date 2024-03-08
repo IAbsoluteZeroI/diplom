@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import cv2
 import numpy as np
 from supervision.tools.detections import Detections
-
+#[eq]
 
 class VideoProcessor:
     def __init__(
