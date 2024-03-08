@@ -39,8 +39,7 @@ class MainWindow(ITerminal):
             # self.close()
             return ExitCommand(self).execute()
         if view_model.command == "sample_video_tracking":
-            view_model.set_tracking_info(
-                TrackSampleVideoCommand(
-                    video_path="test.avi", line_coords=[[1100, 230], [1200, 750]]
+            view_model.tracking_info = TrackSampleVideoCommand(
+                video_path="test.avi", 
+                line_coords=[[1100, 230], [1200, 750]]
                 ).execute()
-            )
