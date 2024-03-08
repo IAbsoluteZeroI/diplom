@@ -1,8 +1,10 @@
 version: '3.5'
 
 services:
+
   db:
     container_name: db
+    user: root
     ports:
       - '5432:5432'
     
@@ -10,18 +12,10 @@ services:
       POSTGRES_PASSWORD: root
       POSTGRES_USER: admin
       POSTGRES_DB: db
+      PGDATA: postgres/data
       POSTGRES_INITDB_ARGS: "-A md5"
 
-    image: postgres:14.3-alpine
-
-    # cap_add:
-    #   - SYS_PTRACE
-
-    #command: sh -c "chown -R postgres:postgres /postgres/"
+    image: postgres:14.3
 
     volumes:
-      - /pg_data:/var/lib/postgresql/data
-
-volumes:
-  pg_data:
-    external: true
+      - ./postgres/data:/postgres/data
