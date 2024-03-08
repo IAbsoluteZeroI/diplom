@@ -20,13 +20,13 @@ class MenuView:
     def __wait_for_input(self):
         user_input = input("Введи: ")
         if user_input == "1":
-            view_model.set_state("sample_video_tracking")
+            view_model.state = "sample_video_tracking"
         elif user_input == "0":
-            view_model.set_command("exit")
+            view_model.command = "exit"
         else:
             print("Неверный ввод. Попробуйте снова.")
             time.sleep(2)
-            view_model.set_state("menu")
+            view_model.state = "menu"
 
 
 class SampleVideoTracking:
@@ -40,9 +40,9 @@ class SampleVideoTracking:
         self.main_window.clear()
 
     def __show_tracking_info(self):
-        view_model.set_command("sample_video_tracking")
-        print(view_model.get_tracking_info())
+        view_model.command = "sample_video_tracking"
+        print(view_model.tracking_info)
 
     def __wait_for_input(self):
         input("Нажмите ENTER...")
-        view_model.set_state("menu")
+        view_model.state = "menu"

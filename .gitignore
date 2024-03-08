@@ -4,3 +4,6 @@ result.mp4
 __pycache__/
 *.py[cod]
 *$py.class
+app/utils/ByteTrack/build/
+app/utils/ByteTrack/yolox.egg-info/
+app/utils/ByteTrack/yolox/*.so
