@@ -2,6 +2,7 @@ from supervision.tools.detections import Detections
 from supervision.geometry.dataclasses import Point, Vector
 from typing import List, Dict
 import numpy as np
+from ..base.ICamera import ICamera
 
 
 class CustomLineCounter:
@@ -15,7 +16,7 @@ class CustomLineCounter:
             int(class_id): {"in": [], "out": []}
             for class_id in classes
         }
-        self.parent = None
+        self.parent: ICamera = None
 
     def update(self, detections: Detections):
         for id in detections.class_id:
@@ -56,10 +57,10 @@ class CustomLineCounter:
                 self.tracker_state[tracker_id] = tracker_state
                 if tracker_state:
                     # self.result_dict[int(id)]["in_count"] += 1
-                    self.result_dict[int(id)]["in"].append(self.parent.get_time_now())
+                    self.result_dict[int(id)]["in"].append(self.parent.get_current_time())
                 else:
                     # self.result_dict[int(id)]["out_count"] += 1
-                    self.result_dict[int(id)]["out"].append(self.parent.get_time_now())
+                    self.result_dict[int(id)]["out"].append(self.parent.get_current_time())
 
     def get_result_dict(self) -> dict:
         return self.result_dict

@@ -14,9 +14,10 @@ import numpy as np
 from supervision.video.dataclasses import VideoInfo
 from supervision.video.source import get_video_frames_generator
 from .custom_line_counter_annotator import CustomLineCounterAnnotator
+from ..base.ICamera import ICamera
 
 
-class Camera:
+class Camera(ICamera):
     def __init__(
         self,
         id: int,
@@ -38,9 +39,11 @@ class Camera:
             video_info=self.video_info,
         )
         self.generator = get_video_frames_generator(self.video_path)
+        self.current_frame = None
 
-    def get_time_now(self) -> datetime:
-        return datetime.now()
+    def get_current_time(self) -> datetime:
+        current_time = datetime.fromtimestamp(self.current_frame / self.video_info.fps)
+        return current_time
 
     def track_video(self, target_video_path):
         byte_tracker = BYTETracker(BYTETrackerArgs())
@@ -51,7 +54,9 @@ class Camera:
         # open target video file
         with VideoSink(target_video_path, self.video_info) as sink:
             # loop over video frames
-            for frame in tqdm(self.generator, total=self.video_info.total_frames):
+            for index, frame in enumerate(self.generator):
+                self.current_frame = index
+                print(index)
                 # model prediction on single frame and conversion to supervision Detections
                 results = model(frame)
                 detections = Detections(
