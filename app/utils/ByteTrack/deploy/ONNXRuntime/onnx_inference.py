@@ -27,14 +27,14 @@ def make_parser():
         "-i",
         "--video_path",
         type=str,
-        default='../../videos/palace.mp4',
+        default="../../videos/palace.mp4",
         help="Path to your input image.",
     )
     parser.add_argument(
         "-o",
         "--output_dir",
         type=str,
-        default='demo_output',
+        default="demo_output",
         help="Path to your output directory.",
     )
     parser.add_argument(
@@ -63,11 +63,24 @@ def make_parser():
         help="Whether your model uses p6 in FPN/PAN.",
     )
     # tracking args
-    parser.add_argument("--track_thresh", type=float, default=0.5, help="tracking confidence threshold")
-    parser.add_argument("--track_buffer", type=int, default=30, help="the frames for keep lost tracks")
-    parser.add_argument("--match_thresh", type=float, default=0.8, help="matching threshold for tracking")
-    parser.add_argument('--min-box-area', type=float, default=10, help='filter out tiny boxes')
-    parser.add_argument("--mot20", dest="mot20", default=False, action="store_true", help="test mot20.")
+    parser.add_argument(
+        "--track_thresh", type=float, default=0.5, help="tracking confidence threshold"
+    )
+    parser.add_argument(
+        "--track_buffer", type=int, default=30, help="the frames for keep lost tracks"
+    )
+    parser.add_argument(
+        "--match_thresh",
+        type=float,
+        default=0.8,
+        help="matching threshold for tracking",
+    )
+    parser.add_argument(
+        "--min-box-area", type=float, default=10, help="filter out tiny boxes"
+    )
+    parser.add_argument(
+        "--mot20", dest="mot20", default=False, action="store_true", help="test mot20."
+    )
     return parser
 
 
@@ -77,7 +90,7 @@ class Predictor(object):
         self.std = (0.229, 0.224, 0.225)
         self.args = args
         self.session = onnxruntime.InferenceSession(args.model)
-        self.input_shape = tuple(map(int, args.input_shape.split(',')))
+        self.input_shape = tuple(map(int, args.input_shape.split(",")))
 
     def inference(self, ori_img, timer):
         img_info = {"id": 0}
@@ -91,18 +104,22 @@ class Predictor(object):
         ort_inputs = {self.session.get_inputs()[0].name: img[None, :, :, :]}
         timer.tic()
         output = self.session.run(None, ort_inputs)
-        predictions = demo_postprocess(output[0], self.input_shape, p6=self.args.with_p6)[0]
+        predictions = demo_postprocess(
+            output[0], self.input_shape, p6=self.args.with_p6
+        )[0]
 
         boxes = predictions[:, :4]
         scores = predictions[:, 4:5] * predictions[:, 5:]
 
         boxes_xyxy = np.ones_like(boxes)
-        boxes_xyxy[:, 0] = boxes[:, 0] - boxes[:, 2]/2.
-        boxes_xyxy[:, 1] = boxes[:, 1] - boxes[:, 3]/2.
-        boxes_xyxy[:, 2] = boxes[:, 0] + boxes[:, 2]/2.
-        boxes_xyxy[:, 3] = boxes[:, 1] + boxes[:, 3]/2.
+        boxes_xyxy[:, 0] = boxes[:, 0] - boxes[:, 2] / 2.0
+        boxes_xyxy[:, 1] = boxes[:, 1] - boxes[:, 3] / 2.0
+        boxes_xyxy[:, 2] = boxes[:, 0] + boxes[:, 2] / 2.0
+        boxes_xyxy[:, 3] = boxes[:, 1] + boxes[:, 3] / 2.0
         boxes_xyxy /= ratio
-        dets = multiclass_nms(boxes_xyxy, scores, nms_thr=self.args.nms_thr, score_thr=self.args.score_thr)
+        dets = multiclass_nms(
+            boxes_xyxy, scores, nms_thr=self.args.nms_thr, score_thr=self.args.score_thr
+        )
         return dets[:, :-1], img_info
 
 
@@ -124,11 +141,19 @@ def imageflow_demo(predictor, args):
     results = []
     while True:
         if frame_id % 20 == 0:
-            logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
+            logger.info(
+                "Processing frame {} ({:.2f} fps)".format(
+                    frame_id, 1.0 / max(1e-5, timer.average_time)
+                )
+            )
         ret_val, frame = cap.read()
         if ret_val:
             outputs, img_info = predictor.inference(frame, timer)
-            online_targets = tracker.update(outputs, [img_info['height'], img_info['width']], [img_info['height'], img_info['width']])
+            online_targets = tracker.update(
+                outputs,
+                [img_info["height"], img_info["width"]],
+                [img_info["height"], img_info["width"]],
+            )
             online_tlwhs = []
             online_ids = []
             online_scores = []
@@ -142,8 +167,13 @@ def imageflow_demo(predictor, args):
                     online_scores.append(t.score)
             timer.toc()
             results.append((frame_id + 1, online_tlwhs, online_ids, online_scores))
-            online_im = plot_tracking(img_info['raw_img'], online_tlwhs, online_ids, frame_id=frame_id + 1,
-                                      fps=1. / timer.average_time)
+            online_im = plot_tracking(
+                img_info["raw_img"],
+                online_tlwhs,
+                online_ids,
+                frame_id=frame_id + 1,
+                fps=1.0 / timer.average_time,
+            )
             vid_writer.write(online_im)
             ch = cv2.waitKey(1)
             if ch == 27 or ch == ord("q") or ch == ord("Q"):
@@ -153,7 +183,7 @@ def imageflow_demo(predictor, args):
         frame_id += 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = make_parser().parse_args()
 
     predictor = Predictor(args)

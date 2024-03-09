@@ -304,7 +304,7 @@ class YOLOXHead(nn.Module):
                 gt_bboxes_per_image = labels[batch_idx, :num_gt, 1:5]
                 gt_classes = labels[batch_idx, :num_gt, 0]
                 bboxes_preds_per_image = bbox_preds[batch_idx]
-                
+
                 try:
                     (
                         gt_matched_classes,
@@ -334,9 +334,11 @@ class YOLOXHead(nn.Module):
                            CPU mode is applied in this batch. If you want to avoid this issue, \
                            try to reduce the batch size or image size."
                     )
-                    print("OOM RuntimeError is raised due to the huge memory cost during label assignment. \
+                    print(
+                        "OOM RuntimeError is raised due to the huge memory cost during label assignment. \
                            CPU mode is applied in this batch. If you want to avoid this issue, \
-                           try to reduce the batch size or image size.")
+                           try to reduce the batch size or image size."
+                    )
                     torch.cuda.empty_cache()
                     (
                         gt_matched_classes,
@@ -361,8 +363,7 @@ class YOLOXHead(nn.Module):
                         imgs,
                         "cpu",
                     )
-                
-                
+
                 torch.cuda.empty_cache()
                 num_fg += num_fg_img
 
@@ -470,7 +471,7 @@ class YOLOXHead(nn.Module):
             y_shifts,
             total_num_anchors,
             num_gt,
-            img_size
+            img_size,
         )
 
         bboxes_preds_per_image = bboxes_preds_per_image[fg_mask]
@@ -541,7 +542,7 @@ class YOLOXHead(nn.Module):
         y_shifts,
         total_num_anchors,
         num_gt,
-        img_size
+        img_size,
     ):
         expanded_strides_per_image = expanded_strides[0]
         x_shifts_per_image = x_shifts[0] * expanded_strides_per_image
@@ -591,8 +592,12 @@ class YOLOXHead(nn.Module):
         center_radius = 2.5
         # clip center inside image
         gt_bboxes_per_image_clip = gt_bboxes_per_image[:, 0:2].clone()
-        gt_bboxes_per_image_clip[:, 0] = torch.clamp(gt_bboxes_per_image_clip[:, 0], min=0, max=img_size[1])
-        gt_bboxes_per_image_clip[:, 1] = torch.clamp(gt_bboxes_per_image_clip[:, 1], min=0, max=img_size[0])
+        gt_bboxes_per_image_clip[:, 0] = torch.clamp(
+            gt_bboxes_per_image_clip[:, 0], min=0, max=img_size[1]
+        )
+        gt_bboxes_per_image_clip[:, 1] = torch.clamp(
+            gt_bboxes_per_image_clip[:, 1], min=0, max=img_size[0]
+        )
 
         gt_bboxes_per_image_l = (gt_bboxes_per_image_clip[:, 0]).unsqueeze(1).repeat(
             1, total_num_anchors

@@ -22,10 +22,14 @@ class Exp(MyExp):
                 if isinstance(m, nn.BatchNorm2d):
                     m.eps = 1e-3
                     m.momentum = 0.03
+
         if "model" not in self.__dict__:
             from yolox.models import YOLOX, YOLOFPN, YOLOXHead
+
             backbone = YOLOFPN()
-            head = YOLOXHead(self.num_classes, self.width, in_channels=[128, 256, 512], act="lrelu")
+            head = YOLOXHead(
+                self.num_classes, self.width, in_channels=[128, 256, 512], act="lrelu"
+            )
             self.model = YOLOX(backbone, head)
         self.model.apply(init_yolo)
         self.model.head.initialize_biases(1e-2)
@@ -36,18 +40,22 @@ class Exp(MyExp):
         from data.datasets.cocodataset import COCODataset
         from data.datasets.mosaicdetection import MosaicDetection
         from data.datasets.data_augment import TrainTransform
-        from data.datasets.dataloading import YoloBatchSampler, DataLoader, InfiniteSampler
+        from data.datasets.dataloading import (
+            YoloBatchSampler,
+            DataLoader,
+            InfiniteSampler,
+        )
         import torch.distributed as dist
 
         dataset = COCODataset(
-                data_dir='data/COCO/',
-                json_file=self.train_ann,
-                img_size=self.input_size,
-                preproc=TrainTransform(
-                    rgb_means=(0.485, 0.456, 0.406),
-                    std=(0.229, 0.224, 0.225),
-                    max_labels=50
-                ),
+            data_dir="data/COCO/",
+            json_file=self.train_ann,
+            img_size=self.input_size,
+            preproc=TrainTransform(
+                rgb_means=(0.485, 0.456, 0.406),
+                std=(0.229, 0.224, 0.225),
+                max_labels=50,
+            ),
         )
 
         dataset = MosaicDetection(
@@ -57,7 +65,7 @@ class Exp(MyExp):
             preproc=TrainTransform(
                 rgb_means=(0.485, 0.456, 0.406),
                 std=(0.229, 0.224, 0.225),
-                max_labels=120
+                max_labels=120,
             ),
             degrees=self.degrees,
             translate=self.translate,
@@ -70,7 +78,9 @@ class Exp(MyExp):
 
         if is_distributed:
             batch_size = batch_size // dist.get_world_size()
-            sampler = InfiniteSampler(len(self.dataset), seed=self.seed if self.seed else 0)
+            sampler = InfiniteSampler(
+                len(self.dataset), seed=self.seed if self.seed else 0
+            )
         else:
             sampler = torch.utils.data.RandomSampler(self.dataset)
 
@@ -79,7 +89,7 @@ class Exp(MyExp):
             batch_size=batch_size,
             drop_last=False,
             input_dimension=self.input_size,
-            mosaic=not no_aug
+            mosaic=not no_aug,
         )
 
         dataloader_kwargs = {"num_workers": self.data_num_workers, "pin_memory": True}

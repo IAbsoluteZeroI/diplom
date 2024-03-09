@@ -14,22 +14,31 @@ import numpy as np
 from supervision.video.dataclasses import VideoInfo
 from supervision.video.source import get_video_frames_generator
 from .custom_line_counter_annotator import CustomLineCounterAnnotator
-from ..base.ICamera import ICamera
+from ..base.models_interfaces import ICamera
+from dataclasses import dataclass
+from typing import List
+from .place import Place
+from ..base.models_interfaces import ICustomLineCounter
+import uuid
 
 
+@dataclass
 class Camera(ICamera):
+    id: int
+    place: Place
+    line_counters: List[ICustomLineCounter]
+
     def __init__(
         self,
-        id: int,
         aud: int,
         line_counter,
         video_path,
     ):
-        self.id = id
+        self.id = uuid.uuid4
         self.aud = aud
         self.video_path = video_path
         self.video_info = VideoInfo.from_video_path(self.video_path)
-        self.line_counter = line_counter
+        self.line_counter: ICustomLineCounter = line_counter
         self.line_counter.parent = self
         self.line_counter_annotator = CustomLineCounterAnnotator(
             class_name_dict=CLASS_NAMES_DICT,
@@ -106,9 +115,10 @@ class Camera(ICamera):
                 )
 
                 sink.write_frame(frame)
-        return self.line_counter.result_dict
+        return self.line_counter.events
 
     def get_tracker_info(
         self,
     ) -> dict:
         return self.line_counter.get_result_dict()
+

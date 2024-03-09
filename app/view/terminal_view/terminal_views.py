@@ -1,6 +1,6 @@
 from ...view_model.main_view_model import view_model
 import time
-from ...base.ITerminal import ITerminal
+from ...base.i_terminal import ITerminal
 
 
 class MenuView:

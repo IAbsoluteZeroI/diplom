@@ -1,5 +1,6 @@
 import numpy as np
-#from numba import jit
+
+# from numba import jit
 from collections import OrderedDict, deque
 import itertools
 import os
@@ -58,7 +59,9 @@ class STrack(BaseTrack):
         mean_state = self.mean.copy()
         if self.state != TrackState.Tracked:
             mean_state[7] = 0
-        self.mean, self.covariance = self.kalman_filter.predict(mean_state, self.covariance)
+        self.mean, self.covariance = self.kalman_filter.predict(
+            mean_state, self.covariance
+        )
 
         if self.tracker:
             self.tracker.update_roi(self.tlwh)
@@ -72,7 +75,9 @@ class STrack(BaseTrack):
         self.kalman_filter = kalman_filter  # type: KalmanFilter
         self.track_id = self.next_id()
         # cx, cy, aspect_ratio, height, dx, dy, da, dh
-        self.mean, self.covariance = self.kalman_filter.initiate(self.tlwh_to_xyah(self._tlwh))
+        self.mean, self.covariance = self.kalman_filter.initiate(
+            self.tlwh_to_xyah(self._tlwh)
+        )
 
         # self.tracker = sot.SingleObjectTracker()
         # self.tracker.init(image, self.tlwh)
@@ -121,7 +126,8 @@ class STrack(BaseTrack):
 
         new_tlwh = new_track.tlwh
         self.mean, self.covariance = self.kalman_filter.update(
-            self.mean, self.covariance, self.tlwh_to_xyah(new_tlwh))
+            self.mean, self.covariance, self.tlwh_to_xyah(new_tlwh)
+        )
         self.state = TrackState.Tracked
         self.is_activated = True
 
@@ -133,10 +139,10 @@ class STrack(BaseTrack):
                 self.tracker.update(image, self.tlwh)
 
     @property
-    #@jit
+    # @jit
     def tlwh(self):
         """Get current position in bounding box format `(top left x, top left y,
-                width, height)`.
+        width, height)`.
         """
         if self.mean is None:
             return self._tlwh.copy()
@@ -146,7 +152,7 @@ class STrack(BaseTrack):
         return ret
 
     @property
-    #@jit
+    # @jit
     def tlbr(self):
         """Convert bounding box to format `(min x, min y, max x, max y)`, i.e.,
         `(top left, bottom right)`.
@@ -156,7 +162,7 @@ class STrack(BaseTrack):
         return ret
 
     @staticmethod
-    #@jit
+    # @jit
     def tlwh_to_xyah(tlwh):
         """Convert bounding box to format `(center x, center y, aspect ratio,
         height)`, where the aspect ratio is `width / height`.
@@ -172,17 +178,27 @@ class STrack(BaseTrack):
     def tracklet_score(self):
         # score = (1 - np.exp(-0.6 * self.hit_streak)) * np.exp(-0.03 * self.time_by_tracking)
 
-        score = max(0, 1 - np.log(1 + 0.05 * self.time_by_tracking)) * (self.tracklet_len - self.time_by_tracking > 2)
+        score = max(0, 1 - np.log(1 + 0.05 * self.time_by_tracking)) * (
+            self.tracklet_len - self.time_by_tracking > 2
+        )
         # score = max(0, 1 - np.log(1 + 0.05 * self.n_tracking)) * (1 - np.exp(-0.6 * self.hit_streak))
         return score
 
     def __repr__(self):
-        return 'OT_{}_({}-{})'.format(self.track_id, self.start_frame, self.end_frame)
+        return "OT_{}_({}-{})".format(self.track_id, self.start_frame, self.end_frame)
 
 
 class OnlineTracker(object):
 
-    def __init__(self, model_folder, min_cls_score=0.4, min_ap_dist=0.8, max_time_lost=30, use_tracking=True, use_refind=True):
+    def __init__(
+        self,
+        model_folder,
+        min_cls_score=0.4,
+        min_ap_dist=0.8,
+        max_time_lost=30,
+        use_tracking=True,
+        use_refind=True,
+    ):
 
         self.min_cls_score = min_cls_score
         self.min_ap_dist = min_ap_dist
@@ -190,9 +206,9 @@ class OnlineTracker(object):
 
         self.kalman_filter = KalmanFilter()
 
-        self.tracked_stracks = []   # type: list[STrack]
-        self.lost_stracks = []      # type: list[STrack]
-        self.removed_stracks = []   # type: list[STrack]
+        self.tracked_stracks = []  # type: list[STrack]
+        self.lost_stracks = []  # type: list[STrack]
+        self.removed_stracks = []  # type: list[STrack]
 
         self.use_refind = use_refind
         self.use_tracking = use_tracking
@@ -202,12 +218,12 @@ class OnlineTracker(object):
         self.frame_id = 0
 
     def update(self, output_results, img_info, img_size, img_file_name):
-        img_file_name = os.path.join(get_yolox_datadir(), 'mot', 'train', img_file_name)
+        img_file_name = os.path.join(get_yolox_datadir(), "mot", "train", img_file_name)
         image = cv2.imread(img_file_name)
         # post process detections
         output_results = output_results.cpu().numpy()
         confidences = output_results[:, 4] * output_results[:, 5]
-        
+
         bboxes = output_results[:, :4]  # x1y1x2y2
         img_h, img_w = img_info[0], img_info[1]
         scale = min(img_size[0] / float(img_h), img_size[1] / float(img_w))
@@ -232,20 +248,25 @@ class OnlineTracker(object):
         """step 2: scoring and selection"""
         if det_scores is None:
             det_scores = np.ones(len(tlwhs), dtype=float)
-        detections = [STrack(tlwh, score, from_det=True) for tlwh, score in zip(tlwhs, det_scores)]
+        detections = [
+            STrack(tlwh, score, from_det=True) for tlwh, score in zip(tlwhs, det_scores)
+        ]
         if self.use_tracking:
-            tracks = [STrack(t.self_tracking(image), 0.6 * t.tracklet_score(), from_det=False)
-                        for t in itertools.chain(self.tracked_stracks, self.lost_stracks) if t.is_activated]
+            tracks = [
+                STrack(t.self_tracking(image), 0.6 * t.tracklet_score(), from_det=False)
+                for t in itertools.chain(self.tracked_stracks, self.lost_stracks)
+                if t.is_activated
+            ]
             detections.extend(tracks)
         rois = np.asarray([d.tlbr for d in detections], dtype=np.float32)
         scores = np.asarray([d.score for d in detections], dtype=np.float32)
         # nms
         if len(detections) > 0:
             nms_out_index = torchvision.ops.batched_nms(
-            torch.from_numpy(rois),
-            torch.from_numpy(scores.reshape(-1)).to(torch.from_numpy(rois).dtype),
-            torch.zeros_like(torch.from_numpy(scores.reshape(-1))),
-            0.7,
+                torch.from_numpy(rois),
+                torch.from_numpy(scores.reshape(-1)).to(torch.from_numpy(rois).dtype),
+                torch.zeros_like(torch.from_numpy(scores.reshape(-1))),
+                0.7,
             )
             keep = nms_out_index.numpy()
             mask = np.zeros(len(rois), dtype=np.bool)
@@ -275,17 +296,29 @@ class OnlineTracker(object):
             else:
                 tracked_stracks.append(track)
 
-        dists = matching.nearest_reid_distance(tracked_stracks, detections, metric='euclidean')
-        dists = matching.gate_cost_matrix(self.kalman_filter, dists, tracked_stracks, detections)
-        matches, u_track, u_detection = matching.linear_assignment(dists, thresh=self.min_ap_dist)
+        dists = matching.nearest_reid_distance(
+            tracked_stracks, detections, metric="euclidean"
+        )
+        dists = matching.gate_cost_matrix(
+            self.kalman_filter, dists, tracked_stracks, detections
+        )
+        matches, u_track, u_detection = matching.linear_assignment(
+            dists, thresh=self.min_ap_dist
+        )
         for itracked, idet in matches:
             tracked_stracks[itracked].update(detections[idet], self.frame_id, image)
 
         # matching for missing targets
         detections = [detections[i] for i in u_detection]
-        dists = matching.nearest_reid_distance(self.lost_stracks, detections, metric='euclidean')
-        dists = matching.gate_cost_matrix(self.kalman_filter, dists, self.lost_stracks, detections)
-        matches, u_lost, u_detection = matching.linear_assignment(dists, thresh=self.min_ap_dist)
+        dists = matching.nearest_reid_distance(
+            self.lost_stracks, detections, metric="euclidean"
+        )
+        dists = matching.gate_cost_matrix(
+            self.kalman_filter, dists, self.lost_stracks, detections
+        )
+        matches, u_lost, u_detection = matching.linear_assignment(
+            dists, thresh=self.min_ap_dist
+        )
         for ilost, idet in matches:
             track = self.lost_stracks[ilost]  # type: STrack
             det = detections[idet]
@@ -300,7 +333,9 @@ class OnlineTracker(object):
         dists = matching.iou_distance(r_tracked_stracks, detections)
         matches, u_track, u_detection = matching.linear_assignment(dists, thresh=0.5)
         for itracked, idet in matches:
-            r_tracked_stracks[itracked].update(detections[idet], self.frame_id, image, update_feature=True)
+            r_tracked_stracks[itracked].update(
+                detections[idet], self.frame_id, image, update_feature=True
+            )
         for it in u_track:
             track = r_tracked_stracks[it]
             track.mark_lost()
@@ -309,9 +344,13 @@ class OnlineTracker(object):
         # unconfirmed
         detections = [detections[i] for i in u_detection if i < len_det]
         dists = matching.iou_distance(unconfirmed, detections)
-        matches, u_unconfirmed, u_detection = matching.linear_assignment(dists, thresh=0.7)
+        matches, u_unconfirmed, u_detection = matching.linear_assignment(
+            dists, thresh=0.7
+        )
         for itracked, idet in matches:
-            unconfirmed[itracked].update(detections[idet], self.frame_id, image, update_feature=True)
+            unconfirmed[itracked].update(
+                detections[idet], self.frame_id, image, update_feature=True
+            )
         for it in u_unconfirmed:
             track = unconfirmed[it]
             track.mark_removed()
@@ -331,8 +370,12 @@ class OnlineTracker(object):
                 track.mark_removed()
                 removed_stracks.append(track)
 
-        self.tracked_stracks = [t for t in self.tracked_stracks if t.state == TrackState.Tracked]
-        self.lost_stracks = [t for t in self.lost_stracks if t.state == TrackState.Lost]  # type: list[STrack]
+        self.tracked_stracks = [
+            t for t in self.tracked_stracks if t.state == TrackState.Tracked
+        ]
+        self.lost_stracks = [
+            t for t in self.lost_stracks if t.state == TrackState.Lost
+        ]  # type: list[STrack]
         self.tracked_stracks.extend(activated_starcks)
         self.tracked_stracks.extend(refind_stracks)
         self.lost_stracks.extend(lost_stracks)
@@ -341,12 +384,14 @@ class OnlineTracker(object):
         # output_stracks = self.tracked_stracks + self.lost_stracks
 
         # get scores of lost tracks
-        output_tracked_stracks = [track for track in self.tracked_stracks if track.is_activated]
+        output_tracked_stracks = [
+            track for track in self.tracked_stracks if track.is_activated
+        ]
 
         output_stracks = output_tracked_stracks
 
         return output_stracks
-    
+
     @staticmethod
     def _xyxy_to_tlwh_array(bbox_xyxy):
         if isinstance(bbox_xyxy, np.ndarray):

@@ -58,11 +58,16 @@ class CustomLineCounterAnnotator:
         )
 
         report = ""
-        for key in line_counter.result_dict:
-            class_name = self.class_name_dict[key]
-            in_count = line_counter.result_dict[key]["in"]
-            out_count = line_counter.result_dict[key]["out"]
-            report += f" | {class_name}: in {in_count} out {out_count}"
+        for event in line_counter.events:
+            # class_name = self.class_name_dict[key]
+            # in_count = line_counter.result_dict[key]["in"]
+            # out_count = line_counter.result_dict[key]["out"]
+            # report += f" | {class_name}: in {in_count} out {out_count}"
+            
+            class_name = event.obj.name
+            in_or_out = event.type
+            mins_secs = event.date.strftime("%M:%S")
+            report += f" | {class_name}: {in_or_out.name} time: {mins_secs}"
         report += " |"
 
         (report_width, report_height), _ = cv2.getTextSize(

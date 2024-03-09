@@ -7,7 +7,8 @@ import torch.nn as nn
 import pickle
 import os
 from torch.nn.modules import CrossMapLRN2d as SpatialCrossMapLRN
-#from torch.legacy.nn import SpatialCrossMapLRN as SpatialCrossMapLRNOld
+
+# from torch.legacy.nn import SpatialCrossMapLRN as SpatialCrossMapLRNOld
 from torch.autograd import Function, Variable
 from torch.nn import Module
 
@@ -31,42 +32,43 @@ def clip_boxes(boxes, im_shape):
     return boxes
 
 
-def load_net(fname, net, prefix='', load_state_dict=False):
+def load_net(fname, net, prefix="", load_state_dict=False):
     import h5py
-    with h5py.File(fname, mode='r') as h5f:
+
+    with h5py.File(fname, mode="r") as h5f:
         h5f_is_module = True
         for k in h5f.keys():
-            if not str(k).startswith('module.'):
+            if not str(k).startswith("module."):
                 h5f_is_module = False
                 break
-        if prefix == '' and not isinstance(net, nn.DataParallel) and h5f_is_module:
-            prefix = 'module.'
+        if prefix == "" and not isinstance(net, nn.DataParallel) and h5f_is_module:
+            prefix = "module."
 
         for k, v in net.state_dict().items():
             k = prefix + k
             if k in h5f:
                 param = torch.from_numpy(np.asarray(h5f[k]))
                 if v.size() != param.size():
-                    print('Inconsistent shape: {}, {}'.format(v.size(), param.size()))
+                    print("Inconsistent shape: {}, {}".format(v.size(), param.size()))
                 else:
                     v.copy_(param)
             else:
-                print.warning('No layer: {}'.format(k))
+                print.warning("No layer: {}".format(k))
 
-        epoch = h5f.attrs['epoch'] if 'epoch' in h5f.attrs else -1
+        epoch = h5f.attrs["epoch"] if "epoch" in h5f.attrs else -1
 
         if not load_state_dict:
-            if 'learning_rates' in h5f.attrs:
-                lr = h5f.attrs['learning_rates']
+            if "learning_rates" in h5f.attrs:
+                lr = h5f.attrs["learning_rates"]
             else:
-                lr = h5f.attrs.get('lr', -1)
+                lr = h5f.attrs.get("lr", -1)
                 lr = np.asarray([lr] if lr > 0 else [], dtype=np.float)
 
             return epoch, lr
 
-        state_file = fname + '.optimizer_state.pk'
+        state_file = fname + ".optimizer_state.pk"
         if os.path.isfile(state_file):
-            with open(state_file, 'rb') as f:
+            with open(state_file, "rb") as f:
                 state_dicts = pickle.load(f)
                 if not isinstance(state_dicts, list):
                     state_dicts = [state_dicts]
@@ -128,7 +130,6 @@ class Inception(nn.Module):
         self.b3 = nn.Sequential(
             nn.Conv2d(in_planes, n5x5red, kernel_size=1),
             nn.ReLU(True),
-
             nn.Conv2d(n5x5red, n5x5, kernel_size=5, padding=2),
             nn.ReLU(True),
         )
@@ -136,7 +137,6 @@ class Inception(nn.Module):
         # 3x3 pool -> 1x1 conv branch
         self.b4 = nn.Sequential(
             nn.MaxPool2d(3, stride=1, padding=1),
-
             nn.Conv2d(in_planes, pool_planes, kernel_size=1),
             nn.ReLU(True),
         )
@@ -146,7 +146,7 @@ class Inception(nn.Module):
         y2 = self.b2(x)
         y3 = self.b3(x)
         y4 = self.b4(x)
-        return torch.cat([y1,y2,y3,y4], 1)
+        return torch.cat([y1, y2, y3, y4], 1)
 
 
 class GoogLeNet(nn.Module):
@@ -158,29 +158,25 @@ class GoogLeNet(nn.Module):
         self.pre_layers = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3),
             nn.ReLU(True),
-
             nn.MaxPool2d(3, stride=2, ceil_mode=True),
             SpatialCrossMapLRN(5),
-
             nn.Conv2d(64, 64, 1),
             nn.ReLU(True),
-
             nn.Conv2d(64, 192, 3, padding=1),
             nn.ReLU(True),
-
             SpatialCrossMapLRN(5),
             nn.MaxPool2d(3, stride=2, ceil_mode=True),
         )
 
-        self.a3 = Inception(192,  64,  96, 128, 16, 32, 32)
+        self.a3 = Inception(192, 64, 96, 128, 16, 32, 32)
         self.b3 = Inception(256, 128, 128, 192, 32, 96, 64)
 
         self.maxpool = nn.MaxPool2d(3, stride=2, ceil_mode=True)
 
-        self.a4 = Inception(480, 192,  96, 208, 16,  48,  64)
-        self.b4 = Inception(512, 160, 112, 224, 24,  64,  64)
-        self.c4 = Inception(512, 128, 128, 256, 24,  64,  64)
-        self.d4 = Inception(512, 112, 144, 288, 32,  64,  64)
+        self.a4 = Inception(480, 192, 96, 208, 16, 48, 64)
+        self.b4 = Inception(512, 160, 112, 224, 24, 64, 64)
+        self.c4 = Inception(512, 128, 128, 256, 24, 64, 64)
+        self.d4 = Inception(512, 112, 144, 288, 32, 64, 64)
         self.e4 = Inception(528, 256, 160, 320, 32, 128, 128)
 
     def forward(self, x):
@@ -209,7 +205,7 @@ class Model(nn.Module):
         self.conv_att = nn.Conv2d(512, self.n_parts, 1)
 
         for i in range(self.n_parts):
-            setattr(self, 'linear_feature{}'.format(i+1), nn.Linear(512, 64))
+            setattr(self, "linear_feature{}".format(i + 1), nn.Linear(512, 64))
 
     def forward(self, x):
         feature = self.feat_conv(x)
@@ -222,11 +218,15 @@ class Model(nn.Module):
             masked_feature = feature * torch.unsqueeze(att_weights[:, i], 1)
             pooled_feature = F.avg_pool2d(masked_feature, masked_feature.size()[2:4])
             linear_feautres.append(
-                getattr(self, 'linear_feature{}'.format(i+1))(pooled_feature.view(pooled_feature.size(0), -1))
+                getattr(self, "linear_feature{}".format(i + 1))(
+                    pooled_feature.view(pooled_feature.size(0), -1)
+                )
             )
 
         concat_features = torch.cat(linear_feautres, 1)
-        normed_feature = concat_features / torch.clamp(torch.norm(concat_features, 2, 1, keepdim=True), min=1e-6)
+        normed_feature = concat_features / torch.clamp(
+            torch.norm(concat_features, 2, 1, keepdim=True), min=1e-6
+        )
 
         return normed_feature
 
@@ -235,7 +235,7 @@ def load_reid_model(ckpt):
     model = Model(n_parts=8)
     model.inp_size = (80, 160)
     load_net(ckpt, model)
-    print('Load ReID model from {}'.format(ckpt))
+    print("Load ReID model from {}".format(ckpt))
 
     model = model.cuda()
     model.eval()
@@ -252,7 +252,7 @@ def im_preprocess(image):
 def extract_image_patches(image, bboxes):
     bboxes = np.round(bboxes).astype(np.int)
     bboxes = clip_boxes(bboxes, image.shape)
-    patches = [image[box[1]:box[3], box[0]:box[2]] for box in bboxes]
+    patches = [image[box[1] : box[3], box[0] : box[2]] for box in bboxes]
     return patches
 
 
@@ -261,7 +261,10 @@ def extract_reid_features(reid_model, image, tlbrs):
         return torch.FloatTensor()
 
     patches = extract_image_patches(image, tlbrs)
-    patches = np.asarray([im_preprocess(cv2.resize(p, reid_model.inp_size)) for p in patches], dtype=np.float32)
+    patches = np.asarray(
+        [im_preprocess(cv2.resize(p, reid_model.inp_size)) for p in patches],
+        dtype=np.float32,
+    )
 
     with torch.no_grad():
         im_var = Variable(torch.from_numpy(patches))

@@ -2,20 +2,32 @@ from supervision.tools.detections import Detections
 from supervision.geometry.dataclasses import Point, Vector
 from typing import List, Dict
 import numpy as np
-from ..base.ICamera import ICamera
+from ..base.models_interfaces import ICamera, IEventHistory, EventType
+from dataclasses import dataclass
+from .event_history import EventHistory
+from .obj import get_obj_from_id
+import uuid
 
 
+@dataclass
 class CustomLineCounter:
-    def __init__(self, start: Point, end: Point, classes: List):
-        self.vector = Vector(start=start, end=end)
+    id: int
+    coord_left: List[int]
+    coord_right: List[int]
+    events: List["IEventHistory"]
+
+    def __init__(self, coord_left: Point, coord_right: Point, classes: List):
+        self.id = uuid.uuid4
+        self.vector = Vector(start=coord_left, end=coord_right)
         self.tracker_state: Dict[str, bool] = {}
-        self.start = start
-        self.end = end
-        self.result_dict = {
-            # int(class_id): {"in_count": int(0), "out_count": int(0)}
-            int(class_id): {"in": [], "out": []}
-            for class_id in classes
-        }
+        self.coord_left = coord_right
+        self.coord_right = coord_right
+        # self.result_dict = {
+        #     # int(class_id): {"in_count": int(0), "out_count": int(0)}
+        #     int(class_id): {"in": [], "out": []}
+        #     for class_id in classes
+        # }
+        self.events = []
         self.parent: ICamera = None
 
     def update(self, detections: Detections):
@@ -57,10 +69,50 @@ class CustomLineCounter:
                 self.tracker_state[tracker_id] = tracker_state
                 if tracker_state:
                     # self.result_dict[int(id)]["in_count"] += 1
-                    self.result_dict[int(id)]["in"].append(self.parent.get_current_time())
+
+                    # self.result_dict[int(id)]["in"].append(
+                    #     self.parent.get_current_time()
+                    # )
+
+                    # self.events.append(NewEventCommand(
+                    #     camera=self.parent, 
+                    #     line_counter=self, 
+                    #     obj=GetObjCommand(int(id)).execute(), 
+                    #     type=EventType.IN
+                    # ))
+
+                    self.events.append(self.__new_event(
+                        int(id),
+                        EventType.IN
+                    ))
+
+
                 else:
                     # self.result_dict[int(id)]["out_count"] += 1
-                    self.result_dict[int(id)]["out"].append(self.parent.get_current_time())
+
+                    # self.result_dict[int(id)]["out"].append(
+                    #     self.parent.get_current_time()
+                    # )
+
+                    # self.events.append(NewEventCommand(
+                    #     camera=self.parent, 
+                    #     line_counter=self, 
+                    #     obj=GetObjCommand(int(id)).execute(), 
+                    #     type=EventType.OUT
+                    # ))
+                    self.events.append(self.__new_event(
+                        int(id),
+                        EventType.OUT
+                    ))
+    
+    def __new_event(self, obj_id: int, type: EventType):
+        return EventHistory(
+            id=uuid.uuid4,
+            line_counter=self,
+            obj=get_obj_from_id(obj_id),
+            date=self.parent.get_current_time(),
+            type=type
+            )
 
     def get_result_dict(self) -> dict:
         return self.result_dict

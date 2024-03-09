@@ -6,7 +6,13 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 
 from yolox.core import launch
 from yolox.exp import get_exp
-from yolox.utils import configure_nccl, fuse_model, get_local_rank, get_model_info, setup_logger
+from yolox.utils import (
+    configure_nccl,
+    fuse_model,
+    get_local_rank,
+    get_model_info,
+    setup_logger,
+)
 from yolox.evaluators import MOTEvaluator
 
 import argparse
@@ -102,11 +108,24 @@ def make_parser():
     parser.add_argument("--tsize", default=None, type=int, help="test img size")
     parser.add_argument("--seed", default=None, type=int, help="eval seed")
     # tracking args
-    parser.add_argument("--track_thresh", type=float, default=0.6, help="tracking confidence threshold")
-    parser.add_argument("--track_buffer", type=int, default=30, help="the frames for keep lost tracks")
-    parser.add_argument("--match_thresh", type=float, default=0.9, help="matching threshold for tracking")
-    parser.add_argument("--min-box-area", type=float, default=100, help='filter out tiny boxes')
-    parser.add_argument("--mot20", dest="mot20", default=False, action="store_true", help="test mot20.")
+    parser.add_argument(
+        "--track_thresh", type=float, default=0.6, help="tracking confidence threshold"
+    )
+    parser.add_argument(
+        "--track_buffer", type=int, default=30, help="the frames for keep lost tracks"
+    )
+    parser.add_argument(
+        "--match_thresh",
+        type=float,
+        default=0.9,
+        help="matching threshold for tracking",
+    )
+    parser.add_argument(
+        "--min-box-area", type=float, default=100, help="filter out tiny boxes"
+    )
+    parser.add_argument(
+        "--mot20", dest="mot20", default=False, action="store_true", help="test mot20."
+    )
     return parser
 
 
@@ -114,12 +133,14 @@ def compare_dataframes(gts, ts):
     accs = []
     names = []
     for k, tsacc in ts.items():
-        if k in gts:            
-            logger.info('Comparing {}...'.format(k))
-            accs.append(mm.utils.compare_to_groundtruth(gts[k], tsacc, 'iou', distth=0.5))
+        if k in gts:
+            logger.info("Comparing {}...".format(k))
+            accs.append(
+                mm.utils.compare_to_groundtruth(gts[k], tsacc, "iou", distth=0.5)
+            )
             names.append(k)
         else:
-            logger.warning('No ground truth for {}, skipping.'.format(k))
+            logger.warning("No ground truth for {}, skipping.".format(k))
 
     return accs, names
 
@@ -162,7 +183,7 @@ def main(exp, args, num_gpu):
 
     model = exp.get_model()
     logger.info("Model Summary: {}".format(get_model_info(model, exp.test_size)))
-    #logger.info("Model Structure:\n{}".format(str(model)))
+    # logger.info("Model Structure:\n{}".format(str(model)))
 
     val_loader = exp.get_eval_loader(args.batch_size, is_distributed, args.test)
     evaluator = MOTEvaluator(
@@ -172,7 +193,7 @@ def main(exp, args, num_gpu):
         confthre=exp.test_conf,
         nmsthre=exp.nmsthre,
         num_classes=exp.num_classes,
-        )
+    )
 
     torch.cuda.set_device(rank)
     model.cuda(rank)
@@ -213,62 +234,124 @@ def main(exp, args, num_gpu):
 
     # start evaluate
     *_, summary = evaluator.evaluate(
-        model, is_distributed, args.fp16, trt_file, decoder, exp.test_size, results_folder
+        model,
+        is_distributed,
+        args.fp16,
+        trt_file,
+        decoder,
+        exp.test_size,
+        results_folder,
     )
     logger.info("\n" + summary)
 
     # evaluate MOTA
-    mm.lap.default_solver = 'lap'
+    mm.lap.default_solver = "lap"
 
-    if exp.val_ann == 'val_half.json':
-        gt_type = '_val_half'
+    if exp.val_ann == "val_half.json":
+        gt_type = "_val_half"
     else:
-        gt_type = ''
-    print('gt_type', gt_type)
+        gt_type = ""
+    print("gt_type", gt_type)
     if args.mot20:
-        gtfiles = glob.glob(os.path.join('datasets/MOT20/train', '*/gt/gt{}.txt'.format(gt_type)))
+        gtfiles = glob.glob(
+            os.path.join("datasets/MOT20/train", "*/gt/gt{}.txt".format(gt_type))
+        )
     else:
-        gtfiles = glob.glob(os.path.join('datasets/mot/train', '*/gt/gt{}.txt'.format(gt_type)))
-    print('gt_files', gtfiles)
-    tsfiles = [f for f in glob.glob(os.path.join(results_folder, '*.txt')) if not os.path.basename(f).startswith('eval')]
+        gtfiles = glob.glob(
+            os.path.join("datasets/mot/train", "*/gt/gt{}.txt".format(gt_type))
+        )
+    print("gt_files", gtfiles)
+    tsfiles = [
+        f
+        for f in glob.glob(os.path.join(results_folder, "*.txt"))
+        if not os.path.basename(f).startswith("eval")
+    ]
 
-    logger.info('Found {} groundtruths and {} test files.'.format(len(gtfiles), len(tsfiles)))
-    logger.info('Available LAP solvers {}'.format(mm.lap.available_solvers))
-    logger.info('Default LAP solver \'{}\''.format(mm.lap.default_solver))
-    logger.info('Loading files.')
-    
-    gt = OrderedDict([(Path(f).parts[-3], mm.io.loadtxt(f, fmt='mot15-2D', min_confidence=1)) for f in gtfiles])
-    ts = OrderedDict([(os.path.splitext(Path(f).parts[-1])[0], mm.io.loadtxt(f, fmt='mot15-2D', min_confidence=-1)) for f in tsfiles])    
-    
-    mh = mm.metrics.create()    
+    logger.info(
+        "Found {} groundtruths and {} test files.".format(len(gtfiles), len(tsfiles))
+    )
+    logger.info("Available LAP solvers {}".format(mm.lap.available_solvers))
+    logger.info("Default LAP solver '{}'".format(mm.lap.default_solver))
+    logger.info("Loading files.")
+
+    gt = OrderedDict(
+        [
+            (Path(f).parts[-3], mm.io.loadtxt(f, fmt="mot15-2D", min_confidence=1))
+            for f in gtfiles
+        ]
+    )
+    ts = OrderedDict(
+        [
+            (
+                os.path.splitext(Path(f).parts[-1])[0],
+                mm.io.loadtxt(f, fmt="mot15-2D", min_confidence=-1),
+            )
+            for f in tsfiles
+        ]
+    )
+
+    mh = mm.metrics.create()
     accs, names = compare_dataframes(gt, ts)
-    
-    logger.info('Running metrics')
-    metrics = ['recall', 'precision', 'num_unique_objects', 'mostly_tracked',
-               'partially_tracked', 'mostly_lost', 'num_false_positives', 'num_misses',
-               'num_switches', 'num_fragmentations', 'mota', 'motp', 'num_objects']
+
+    logger.info("Running metrics")
+    metrics = [
+        "recall",
+        "precision",
+        "num_unique_objects",
+        "mostly_tracked",
+        "partially_tracked",
+        "mostly_lost",
+        "num_false_positives",
+        "num_misses",
+        "num_switches",
+        "num_fragmentations",
+        "mota",
+        "motp",
+        "num_objects",
+    ]
     summary = mh.compute_many(accs, names=names, metrics=metrics, generate_overall=True)
     # summary = mh.compute_many(accs, names=names, metrics=mm.metrics.motchallenge_metrics, generate_overall=True)
     # print(mm.io.render_summary(
-    #   summary, formatters=mh.formatters, 
+    #   summary, formatters=mh.formatters,
     #   namemap=mm.io.motchallenge_metric_names))
     div_dict = {
-        'num_objects': ['num_false_positives', 'num_misses', 'num_switches', 'num_fragmentations'],
-        'num_unique_objects': ['mostly_tracked', 'partially_tracked', 'mostly_lost']}
+        "num_objects": [
+            "num_false_positives",
+            "num_misses",
+            "num_switches",
+            "num_fragmentations",
+        ],
+        "num_unique_objects": ["mostly_tracked", "partially_tracked", "mostly_lost"],
+    }
     for divisor in div_dict:
         for divided in div_dict[divisor]:
-            summary[divided] = (summary[divided] / summary[divisor])
+            summary[divided] = summary[divided] / summary[divisor]
     fmt = mh.formatters
-    change_fmt_list = ['num_false_positives', 'num_misses', 'num_switches', 'num_fragmentations', 'mostly_tracked',
-                       'partially_tracked', 'mostly_lost']
+    change_fmt_list = [
+        "num_false_positives",
+        "num_misses",
+        "num_switches",
+        "num_fragmentations",
+        "mostly_tracked",
+        "partially_tracked",
+        "mostly_lost",
+    ]
     for k in change_fmt_list:
-        fmt[k] = fmt['mota']
-    print(mm.io.render_summary(summary, formatters=fmt, namemap=mm.io.motchallenge_metric_names))
+        fmt[k] = fmt["mota"]
+    print(
+        mm.io.render_summary(
+            summary, formatters=fmt, namemap=mm.io.motchallenge_metric_names
+        )
+    )
 
-    metrics = mm.metrics.motchallenge_metrics + ['num_objects']
+    metrics = mm.metrics.motchallenge_metrics + ["num_objects"]
     summary = mh.compute_many(accs, names=names, metrics=metrics, generate_overall=True)
-    print(mm.io.render_summary(summary, formatters=mh.formatters, namemap=mm.io.motchallenge_metric_names))
-    logger.info('Completed')
+    print(
+        mm.io.render_summary(
+            summary, formatters=mh.formatters, namemap=mm.io.motchallenge_metric_names
+        )
+    )
+    logger.info("Completed")
 
 
 if __name__ == "__main__":

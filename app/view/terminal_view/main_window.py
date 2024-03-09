@@ -1,7 +1,7 @@
 from ...view_model.main_view_model import view_model
 from .terminal_views import *
 from ...utils.commands import ExitCommand, TrackSampleVideoCommand
-from ...base.ITerminal import ITerminal
+from ...base.i_terminal import ITerminal
 import sys
 import os
 
@@ -40,6 +40,5 @@ class MainWindow(ITerminal):
             return ExitCommand(self).execute()
         if view_model.command == "sample_video_tracking":
             view_model.tracking_info = TrackSampleVideoCommand(
-                video_path="test.avi", 
-                line_coords=[[1100, 230], [1200, 750]]
-                ).execute()
+                video_path="test.avi", line_coords=[[1100, 230], [1200, 750]]
+            ).execute()

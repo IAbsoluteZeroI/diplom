@@ -8,6 +8,7 @@ import torch.distributed as dist
 from yolox.exp import Exp as MyExp
 from yolox.data import get_yolox_datadir
 
+
 class Exp(MyExp):
     def __init__(self):
         super(Exp, self).__init__()
@@ -16,10 +17,10 @@ class Exp(MyExp):
         self.width = 1.25
         self.exp_name = os.path.split(os.path.realpath(__file__))[1].split(".")[0]
         self.train_ann = "train.json"
-        self.val_ann = "test.json"   # change to train.json when running on training set
+        self.val_ann = "test.json"  # change to train.json when running on training set
         self.input_size = (896, 1600)
         self.test_size = (896, 1600)
-        #self.test_size = (736, 1920)
+        # self.test_size = (736, 1920)
         self.random_size = (20, 36)
         self.max_epoch = 80
         self.print_interval = 20
@@ -43,7 +44,7 @@ class Exp(MyExp):
         dataset = MOTDataset(
             data_dir=os.path.join(get_yolox_datadir(), "mix_mot20_ch"),
             json_file=self.train_ann,
-            name='',
+            name="",
             img_size=self.input_size,
             preproc=TrainTransform(
                 rgb_means=(0.485, 0.456, 0.406),
@@ -74,9 +75,7 @@ class Exp(MyExp):
         if is_distributed:
             batch_size = batch_size // dist.get_world_size()
 
-        sampler = InfiniteSampler(
-            len(self.dataset), seed=self.seed if self.seed else 0
-        )
+        sampler = InfiniteSampler(len(self.dataset), seed=self.seed if self.seed else 0)
 
         batch_sampler = YoloBatchSampler(
             sampler=sampler,
@@ -99,7 +98,7 @@ class Exp(MyExp):
             data_dir=os.path.join(get_yolox_datadir(), "MOT20"),
             json_file=self.val_ann,
             img_size=self.test_size,
-            name='test', # change to train when running on training set
+            name="test",  # change to train when running on training set
             preproc=ValTransform(
                 rgb_means=(0.485, 0.456, 0.406),
                 std=(0.229, 0.224, 0.225),
