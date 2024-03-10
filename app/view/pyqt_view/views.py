@@ -48,21 +48,25 @@ class TrackingView(QWidget):
 
         uic.loadUi(tracking_info_ui, self)
 
+        self.toMenuViewButton.clicked.connect(lambda:view_model.set_state('menu'))
         self.__show_two_cameras()
 
     def __show_two_cameras(self):
         two_cameras = GetTwoCameras().execute()
-        self.camera1 = two_cameras[0]
-        self.camera2 = two_cameras[1]
+        if len(two_cameras) == 2 and (two_cameras[0] is not None or two_cameras[1] is not None):
+            self.camera1 = two_cameras[0]
+            self.camera2 = two_cameras[1]
 
-        info_about_two_cameras = ""
-        for camera in two_cameras:
-            info_about_two_cameras += (
-                f"Camera: id {camera.id}, video_path {camera.video_path}"
-            )
-            info_about_two_cameras += "<br/>"
-        self.trackingInfo.append(f"<span>{info_about_two_cameras}</span>")
-        self.startTrackingButton.clicked.connect(lambda: self.__start_tracking())
+            info_about_two_cameras = ""
+            for camera in two_cameras:
+                info_about_two_cameras += (
+                    f"Camera: id {camera.id}, video_path {camera.video_path}"
+                )
+                info_about_two_cameras += "<br/>"
+            self.trackingInfo.append(f"<span>{info_about_two_cameras}</span>")
+            self.startTrackingButton.clicked.connect(lambda: self.__start_tracking())
+        else:
+            self.trackingInfo.append(f"<span>Камер нет</span>")
 
     def __start_tracking(self):
         self.trackingInfo.append(f"<span><br/>Трекинг двух видео...</span>")

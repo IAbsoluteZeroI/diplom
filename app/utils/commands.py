@@ -8,13 +8,16 @@ from ..base.models_interfaces import (
     ICamera,
     IEventHistory,
 )
-from ..model.models import Camera, CustomLineCounter, EventHistory, objs
+from ..model.models import Camera, CustomLineCounter, EventHistory, Session
 from supervision.geometry.dataclasses import Point
 from ..utils.yolov8_model import CLASS_ID
 from datetime import datetime
 import uuid
 from PyQt5.QtWidgets import QMainWindow
 from ..model.data.json_db_manager import json_db_manager
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+
 
 
 class TerminalExitCommand(ICommand):
@@ -51,13 +54,19 @@ class TrackSampleVideoCommand(ICommand):
 
 
 class GetCamera1Command(ICommand):
-    def execute(self) -> ICamera:
-        return json_db_manager.get_cameras()[0]
+    def execute(self) -> Camera:
+        session = Session()
+        camera = session.query(Camera).first()
+        session.close()
+        return camera
 
 
 class GetCamera2Command(ICommand):
-    def execute(self) -> ICamera:
-        return json_db_manager.get_cameras()[1]
+    def execute(self) -> Camera:
+        session = Session()
+        camera = session.query(Camera).offset(1).first()
+        session.close()
+        return camera
 
 
 class GetTwoCameras(ICommand):
@@ -70,12 +79,16 @@ class GetTwoCameras(ICommand):
 
 
 class TrackVideoCommand(ICommand):
-    def __init__(self, camera: ICamera, target_video_path: str):
+    def __init__(self, camera: Camera, target_video_path: str):
         self.camera = camera
         self.target_video_path = target_video_path
 
-    def execute(self) -> list[IEventHistory]:
+    def execute(self) -> list[EventHistory]:
+        session = Session()
+        session.add(self.camera)
+        session.flush()
         events = self.camera.track_video(self.target_video_path)
+        session.close()
         return events
 
 

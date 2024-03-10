@@ -5,6 +5,8 @@ import cv2
 import numpy as np
 from sqlalchemy import Column, Integer, String, ForeignKey, Enum, DateTime, Float
 from sqlalchemy.orm import relationship
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
 
 from ..utils.yolov8_model import (
     model,
@@ -18,7 +20,6 @@ from ..utils.tracker import (
     detections2boxes,
     match_detections_with_tracks,
 )
-from .base import Base
 from supervision.tools.detections import Detections, BoxAnnotator
 from supervision.video.dataclasses import VideoInfo
 from supervision.video.source import get_video_frames_generator
@@ -27,6 +28,24 @@ from supervision.draw.color import Color, ColorPalette
 from supervision.geometry.dataclasses import Rect, Point, Vector
 from tqdm.notebook import tqdm
 from .event_type import EventType
+from sqlalchemy.orm import sessionmaker
+from supervision.video.source import get_video_frames_generator
+
+
+engine = create_engine("postgresql+psycopg2://admin:root@127.0.0.1:5432/db")
+Base = declarative_base()
+Session = sessionmaker(bind=engine)
+
+objs = {
+    0: "chair",
+    1: "person",
+    2: "interactive whiteboard",
+    3: "keyboard",
+    4: "laptop",
+    5: "monitor",
+    6: "pc",
+    7: "table",
+}
 
 
 class ObjectsInPlace(Base):
@@ -71,8 +90,9 @@ class Camera(Base):
         self.line_counters = [line_counter]
         self.place_id = place_id
 
-    def get_current_time(self) -> datetime:
-        current_time = datetime.fromtimestamp(self.current_frame / self.video_info.fps)
+
+    def get_current_time(self, video_info) -> datetime:
+        current_time = datetime.fromtimestamp(self._current_frame / video_info.fps)
         return current_time
 
     def track_video(self, target_video_path) -> list:
@@ -80,13 +100,15 @@ class Camera(Base):
         box_annotator = BoxAnnotator(
             color=ColorPalette(), thickness=2, text_thickness=2, text_scale=1
         )
-
+        generator = get_video_frames_generator(self.video_path)
+        video_info = VideoInfo.from_video_path(self.video_path)
+        line_counter_annotator = CustomLineCounterAnnotator(class_name_dict=CLASS_NAMES_DICT, video_info=video_info)
+        line_counter: CustomLineCounter = self.line_counters[0]
         # open target video file
-        with VideoSink(target_video_path, self.video_info) as sink:
+        with VideoSink(target_video_path, video_info) as sink:
             # loop over video frames
-            for index, frame in enumerate(self.generator):
-                self.current_frame = index
-                print(index)
+            for index, frame in enumerate(generator):
+                self._current_frame = index
                 # model prediction on single frame and conversion to supervision Detections
                 results = model(frame)
                 detections = Detections(
@@ -130,9 +152,10 @@ class Camera(Base):
                     frame=frame, detections=detections, labels=labels
                 )
 
-                self.line_counters[0].update(detections=detections)
-                self.line_counter_annotator.annotate(
-                    frame=frame, line_counter=self.line_counters[0]
+                # self.line_counters[0].update(detections=detections)
+                line_counter.update(detections=detections, current_time=self.get_current_time(video_info=video_info))
+                line_counter_annotator.annotate(
+                    frame=frame, line_counter=self.line_counters[0],
                 )
 
                 sink.write_frame(frame)
@@ -164,11 +187,6 @@ class CustomLineCounter(Base):
         coord_right_y: float,
         id: int = None,
     ):
-        self.vector = Vector(
-            start=Point(coord_left_x, coord_left_y),
-            end=Point(coord_right_x, coord_right_y),
-        )
-        self.tracker_state: Dict[str, bool] = {}
         self.coord_left_x = coord_left_x
         self.coord_left_y = coord_left_y
         self.coord_right_x = coord_right_x
@@ -177,7 +195,11 @@ class CustomLineCounter(Base):
         self.events = []
         self.parent: Camera = None
 
-    def update(self, detections: Detections):
+
+    def update(self, detections: Detections, current_time: datetime):
+        vector = self.get_vector()
+        tracker_state = {}
+        temp_events = []
         for id in detections.class_id:
             mask = np.array(
                 [class_id in [int(id)] for class_id in detections.class_id], dtype=bool
@@ -197,45 +219,51 @@ class CustomLineCounter(Base):
                     Point(x=x2, y=y1),
                     Point(x=x2, y=y2),
                 ]
-                triggers = [self.vector.is_in(point=anchor) for anchor in anchors]
+                triggers = [vector.is_in(point=anchor) for anchor in anchors]
 
                 # detection is partially in and partially out
                 if len(set(triggers)) == 2:
                     continue
 
-                tracker_state = triggers[0]
+                # update tracker_state based on the current detection
+                tracker_state[tracker_id] = triggers[0]
+
                 # handle new detection
-                if tracker_id not in self.tracker_state:
-                    self.tracker_state[tracker_id] = tracker_state
-                    continue
-
-                # handle detection on the same side of the line
-                if self.tracker_state.get(tracker_id) == tracker_state:
-                    continue
-
-                self.tracker_state[tracker_id] = tracker_state
-                if tracker_state:
-                    self.events.append(
+                if tracker_id not in temp_events:
+                    temp_events.append(
                         self.__new_event(
                             int(id),
-                            EventType.IN,
+                            EventType.IN if tracker_state[tracker_id] else EventType.OUT,
+                            current_time=current_time,
                         )
                     )
 
-                else:
-                    self.events.append(self.__new_event(int(id), EventType.OUT))
+                # handle detection on the same side of the line
+                elif tracker_state[tracker_id] != self.events[-1].type:
+                    temp_events.append(
+                        self.__new_event(
+                            int(id),
+                            EventType.IN if tracker_state[tracker_id] else EventType.OUT,
+                            current_time=current_time,
+                        )
+                    )
+        self.events += temp_events
+                
 
-    def __new_event(self, obj_id: int, type: EventType):
+    def __new_event(self, obj_id: int, type: EventType, current_time: datetime):
         return EventHistory(
             line_counter=self,
-            obj=get_obj_from_id(obj_id),
-            date=self.parent.get_current_time(),
+            obj=objs[obj_id],
+            date=current_time,
             type=type,
         )
 
     def get_result_dict(self) -> dict:
         return self.result_dict
-
+    
+    def get_vector(self):
+        return Vector(start=Point(self.coord_left_x, self.coord_left_y), end=Point(self.coord_right_x, self.coord_right_y))
+    
 
 class EventHistory(Base):
     __tablename__ = "event_history"
@@ -243,30 +271,28 @@ class EventHistory(Base):
     id = Column(Integer, primary_key=True)
     line_counter_id = Column(Integer, ForeignKey("custom_line_counters.id"))
     line_counter = relationship("CustomLineCounter", back_populates="events")
-    obj_id = Column(Integer, ForeignKey("objects.id"))
-    obj = relationship("Obj", back_populates="events")
+    obj = Column(String)
     date = Column(DateTime)
     type = Column(Enum(EventType))
 
 
-class Obj(Base):
-    __tablename__ = "objects"
+# class Obj(Base):
+#     __tablename__ = "objects"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    events = relationship("EventHistory", back_populates="obj")
+#     id = Column(Integer, primary_key=True)
+#     name = Column(String)
+#     events = relationship("EventHistory", back_populates="obj")
 
-    def __init__(self, id, name, events=None):
-        self.id = id
-        self.name = name
-        self.events = events or []
+#     def __init__(self, id, name, events=None):
+#         self.id = id
+#         self.name = name
+#         self.events = events or []
 
-
-objs = [Obj(id=id, name=name, events=[]) for id, name in CLASS_ID_BY_NAME.items()]
-
-
-def get_obj_from_id(id):
-    return next((obj for obj in objs if obj.id == id), None)
+# session = Session()
+# objs = {}
+# for obj in session.query(Obj).all():
+#     objs[obj.id] = obj.name
+# session.close()
 
 
 class CustomLineCounterAnnotator:
@@ -297,8 +323,8 @@ class CustomLineCounterAnnotator:
     ) -> np.ndarray:
         cv2.line(
             frame,
-            line_counter.vector.start.as_xy_int_tuple(),
-            line_counter.vector.end.as_xy_int_tuple(),
+            line_counter.get_vector().start.as_xy_int_tuple(),
+            line_counter.get_vector().end.as_xy_int_tuple(),
             self.color.as_bgr(),
             self.thickness,
             lineType=cv2.LINE_AA,
@@ -306,7 +332,7 @@ class CustomLineCounterAnnotator:
         )
         cv2.circle(
             frame,
-            line_counter.vector.start.as_xy_int_tuple(),
+            line_counter.get_vector().start.as_xy_int_tuple(),
             radius=5,
             color=self.text_color.as_bgr(),
             thickness=-1,
@@ -314,7 +340,7 @@ class CustomLineCounterAnnotator:
         )
         cv2.circle(
             frame,
-            line_counter.vector.end.as_xy_int_tuple(),
+            line_counter.get_vector().end.as_xy_int_tuple(),
             radius=5,
             color=self.text_color.as_bgr(),
             thickness=-1,
@@ -328,7 +354,8 @@ class CustomLineCounterAnnotator:
             # out_count = line_counter.result_dict[key]["out"]
             # report += f" | {class_name}: in {in_count} out {out_count}"
 
-            class_name = event.obj.name
+            event: EventHistory
+            class_name = event.obj
             in_or_out = event.type
             mins_secs = event.date.strftime("%M:%S")
             report += f" | {class_name}: {in_or_out.name} time: {mins_secs}"
@@ -366,3 +393,4 @@ class CustomLineCounterAnnotator:
             self.text_thickness,
             cv2.LINE_AA,
         )
+
