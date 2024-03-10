@@ -88,6 +88,9 @@ class TrackVideoCommand(ICommand):
         session.add(self.camera)
         session.flush()
         events = self.camera.track_video(self.target_video_path)
+        events = [session.merge(event) for event in events]
+        session.add_all(events)
+        session.commit()
         session.close()
         return events
 

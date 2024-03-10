@@ -75,12 +75,12 @@ class TrackingView(QWidget):
         self.trackingInfo.append(f"<span><br/>Результат трекинга первой камеры:</span>")
         for event in camera1_events:
             self.trackingInfo.append(
-                f'<span>{event.obj.name} {event.type.name} {event.date.strftime("%M:%S")}</br></span>'
+                f'<span>{event.obj} {event.type.name} {event.date.strftime("%M:%S")}</br></span>'
             )
 
         camera2_events = TrackVideoCommand(self.camera2, "camera2_result.mp4").execute()
         self.trackingInfo.append(f"<span>Результат трекинга второй камеры:</span>")
         for event in camera2_events:
             self.trackingInfo.append(
-                f'<span>{event.obj.name} {event.type.name} {event.date.strftime("%M:%S")}</br></span>'
+                f'<span>{event.obj} {event.type.name} {event.date.strftime("%M:%S")}</br></span>'
             )

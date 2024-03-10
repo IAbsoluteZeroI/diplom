@@ -92,8 +92,10 @@ class Camera(Base):
 
 
     def get_current_time(self, video_info) -> datetime:
-        current_time = datetime.fromtimestamp(self._current_frame / video_info.fps)
-        return current_time
+        # current_time = datetime.fromtimestamp(self._current_frame / video_info.fps)
+        # return current_time
+
+        return datetime.now()
 
     def track_video(self, target_video_path) -> list:
         byte_tracker = BYTETracker(BYTETrackerArgs())
@@ -154,9 +156,9 @@ class Camera(Base):
 
                 # self.line_counters[0].update(detections=detections)
                 line_counter.update(detections=detections, current_time=self.get_current_time(video_info=video_info))
-                line_counter_annotator.annotate(
-                    frame=frame, line_counter=self.line_counters[0],
-                )
+                # line_counter_annotator.annotate(
+                #     frame=frame, line_counter=self.line_counters[0],
+                # )
 
                 sink.write_frame(frame)
         return self.line_counters[0].events
@@ -230,33 +232,26 @@ class CustomLineCounter(Base):
 
                 # handle new detection
                 if tracker_id not in temp_events:
-                    temp_events.append(
-                        self.__new_event(
-                            int(id),
-                            EventType.IN if tracker_state[tracker_id] else EventType.OUT,
-                            current_time=current_time,
+                    temp_events.append(EventHistory(
+                        line_counter=self,
+                        obj=objs[id],
+                        type=EventType.IN if tracker_state[tracker_id] else EventType.OUT,
+                        date=current_time,
                         )
                     )
 
                 # handle detection on the same side of the line
                 elif tracker_state[tracker_id] != self.events[-1].type:
-                    temp_events.append(
-                        self.__new_event(
-                            int(id),
-                            EventType.IN if tracker_state[tracker_id] else EventType.OUT,
-                            current_time=current_time,
+                    temp_events.append(EventHistory(
+                        line_counter=self,
+                        obj=objs[id],
+                        type=EventType.IN if tracker_state[tracker_id] else EventType.OUT,
+                        date=current_time,
                         )
                     )
         self.events += temp_events
-                
-
-    def __new_event(self, obj_id: int, type: EventType, current_time: datetime):
-        return EventHistory(
-            line_counter=self,
-            obj=objs[obj_id],
-            date=current_time,
-            type=type,
-        )
+        # print(self.events)
+        
 
     def get_result_dict(self) -> dict:
         return self.result_dict
@@ -321,10 +316,11 @@ class CustomLineCounterAnnotator:
     def annotate(
         self, frame: np.ndarray, line_counter: CustomLineCounter
     ) -> np.ndarray:
+        vector = line_counter.get_vector()
         cv2.line(
             frame,
-            line_counter.get_vector().start.as_xy_int_tuple(),
-            line_counter.get_vector().end.as_xy_int_tuple(),
+            vector.start.as_xy_int_tuple(),
+            vector.end.as_xy_int_tuple(),
             self.color.as_bgr(),
             self.thickness,
             lineType=cv2.LINE_AA,
@@ -332,7 +328,7 @@ class CustomLineCounterAnnotator:
         )
         cv2.circle(
             frame,
-            line_counter.get_vector().start.as_xy_int_tuple(),
+            vector.start.as_xy_int_tuple(),
             radius=5,
             color=self.text_color.as_bgr(),
             thickness=-1,
@@ -340,7 +336,7 @@ class CustomLineCounterAnnotator:
         )
         cv2.circle(
             frame,
-            line_counter.get_vector().end.as_xy_int_tuple(),
+            vector.end.as_xy_int_tuple(),
             radius=5,
             color=self.text_color.as_bgr(),
             thickness=-1,
