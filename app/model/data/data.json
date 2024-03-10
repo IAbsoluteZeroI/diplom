@@ -1,0 +1,11 @@
+{
+    "cameras": [
+        "{\"id\": 233985518387217467500078895888190918804, \"line_counters\": [{\"id\": 115927832958813295151423945314605732262, \"coord_left\": [1121, 292], \"coord_right\": [1544, 407], \"events\": []}], \"place\": {\"id\": 132291720402839090211566907593137481420, \"objects_in_place\": null}, \"video_path\": \"kab24.avi\"}",
+        "{\"id\": 286677515898557686577732545469193799542, \"line_counters\": [{\"id\": 78382692248724392905907973270273949699, \"coord_left\": [927, 1063], \"coord_right\": [739, 227], \"events\": []}], \"place\": {\"id\": 218967078613859549567804791172315889001, \"objects_in_place\": null}, \"video_path\": \"lift.avi\"}"
+    ],
+    "objects_in_place": [],
+    "places": [],
+    "custom_line_counters": [],
+    "event_histories": [],
+    "objects": []
+}

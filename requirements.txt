@@ -83,7 +83,7 @@ onnx==1.15.0
 onnx-simplifier==0.3.5
 onnxoptimizer==0.3.13
 onnxruntime==1.17.1
-opencv-python==4.9.0.80
+opencv-python-headless==4.9.0.80
 packaging==23.2
 pandas==2.2.1
 parso==0.8.3
@@ -127,3 +127,6 @@ wcwidth==0.2.13
 Werkzeug==3.0.1
 widgetsnbextension==4.0.10
 xmltodict==0.13.0
+PyQt5==5.15.10
+sqlalchemy
+psycopg2

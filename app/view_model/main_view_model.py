@@ -41,6 +41,12 @@ class MainViewModel(ReactiveModel):
     command: str
     tracking_info: dict
 
+    def set_state(self, state: str):
+        self.state = state
+
+    def set_command(self, command: str):
+        self.command = command
+
 
 view_model = MainViewModel()
 view_model.state = "menu"

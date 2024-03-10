@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List
 from enum import Enum
+from supervision.geometry.dataclasses import Point
 
 
 @dataclass
@@ -27,13 +28,15 @@ class IPlace:
 @dataclass
 class ICustomLineCounter:
     id: int
-    coord_left: List[int]
-    coord_right: List[int]
+    coord_left: Point
+    coord_right: Point
     events: List["IEventHistory"]  # Один ко многим с EventHistory
 
+
 class EventType(Enum):
-    IN = 'IN'
-    OUT = 'OUT'
+    IN = "IN"
+    OUT = "OUT"
+
 
 @dataclass
 class IEventHistory:
@@ -49,6 +52,7 @@ class ICamera(ABC):
     id: int
     place: "IPlace"  # Один к одному с Place
     line_counters: List[ICustomLineCounter]  # Один ко многим с LineCounter
+    video_path: str
 
     @abstractmethod
     def get_current_time(self) -> datetime: ...
@@ -62,4 +66,3 @@ class IObj:
     id: int
     name: str
     events: List[IEventHistory]  # Один ко многим с EventHistory
-
