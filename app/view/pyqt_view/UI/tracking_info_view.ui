@@ -35,6 +35,13 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="startTrackingAnnotationButton">
+         <property name="text">
+          <string>Трекинг с аннотацией</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
     </layout>

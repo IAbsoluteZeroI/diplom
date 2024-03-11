@@ -19,7 +19,7 @@ class MenuView(QWidget):
         self.__setup_buttons()
 
         self.infoLabel: QLabel
-        self.infoLabel.setText(f"какая то информация")
+        self.infoLabel.setText(f"")
 
     def __setup_buttons(self):
         self.toTwoVideoTrackingViewButton: QPushButton
@@ -50,8 +50,14 @@ class TrackingView(QWidget):
 
         uic.loadUi(tracking_info_ui, self)
 
-        self.toMenuViewButton.clicked.connect(lambda: view_model.set_state("menu"))
+        self.__setup_buttons()
         self.__show_two_cameras()
+
+    def __setup_buttons(self):
+        self.toMenuViewButton.clicked.connect(lambda: view_model.set_state("menu"))
+        self.startTrackingButton.clicked.connect(lambda: self.__start_tracking(False))
+        self.startTrackingAnnotationButton.clicked.connect(lambda: self.__start_tracking(True))
+        
 
     def __show_two_cameras(self):
         two_cameras = GetTwoCameras().execute()
@@ -68,19 +74,18 @@ class TrackingView(QWidget):
                 )
                 info_about_two_cameras += "<br/>"
             self.trackingInfo.append(f"<span>{info_about_two_cameras}</span>")
-            self.startTrackingButton.clicked.connect(self.__start_tracking)
         else:
             self.trackingInfo.append(f"<span>Камер нет</span>")
 
-    def __start_tracking(self):
+    def __start_tracking(self, annotate: bool):
         self.trackingInfo.append(f"<span><br/>Трекинг двух видео...</span>")
         self.trackingInfo.append(f"<span><br/><br/>Трекинг первого видео...</span>")
-        QTimer.singleShot(100, self.__track_camera1)
+        QTimer.singleShot(100, self.__track_camera1(annotate=annotate))
 
-    def __track_camera1(self):
+    def __track_camera1(self, annotate: bool):
         # time.sleep(1)
         # camera1_events = ['результат трекинга 1']
-        camera1_events = TrackVideoCommand(self.camera1, "camera1_result.mp4").execute()
+        camera1_events = TrackVideoCommand(self.camera1, "camera1_result.mp4", annotate=annotate).execute()
         self.trackingInfo.append(f"<span>Результат трекинга первой камеры:</span>")
         for event in camera1_events:
             self.trackingInfo.append(
@@ -91,10 +96,10 @@ class TrackingView(QWidget):
         self.trackingInfo.append(f"<span><br/><br/>Трекинг второго видео...</span>")
         QTimer.singleShot(100, self.__track_camera2)
 
-    def __track_camera2(self):
+    def __track_camera2(self, annotate: bool):
         # time.sleep(1)
         # camera2_events = ['результат трекинга 2']
-        camera2_events = TrackVideoCommand(self.camera2, "camera2_result.mp4").execute()
+        camera2_events = TrackVideoCommand(self.camera2, "camera2_result.mp4", annotate=annotate).execute()
         self.trackingInfo.append(f"<span>Результат трекинга второй камеры:</span>")
         for event in camera2_events:
             self.trackingInfo.append(
