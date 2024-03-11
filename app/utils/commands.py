@@ -28,14 +28,6 @@ class TerminalExitCommand(ICommand):
         self._executor.close()
 
 
-class PyQtExitCommand(ICommand):
-    def __init__(self, executor: QMainWindow):
-        self.__executor = executor
-
-    def execute(self) -> None:
-        self.__executor.close()
-
-
 class TrackSampleVideoCommand(ICommand):
     def __init__(self, video_path: str, line_coords: list):
         self._video_path = video_path

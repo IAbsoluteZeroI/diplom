@@ -160,7 +160,6 @@ class CustomLineCounter(Base):
                         # add the tracker_id to tracker_state with its current state
                         tracker_state[tracker_id] = is_in
 
-
     def get_result_dict(self) -> dict:
         return self.result_dict
 

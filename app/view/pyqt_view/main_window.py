@@ -50,7 +50,7 @@ class MainWindow(QMainWindow):
 
     def __check_command(self):
         if view_model.command == "exit":
-            PyQtExitCommand(self).execute()
+            self.close()
 
         elif view_model.command == "about_programm":
             MessageView(

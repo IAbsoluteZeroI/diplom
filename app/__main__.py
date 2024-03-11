@@ -40,21 +40,30 @@ def setup_bd():
         session.add(place2)
 
         camera1 = Camera(
-            video_path='kab24.avi',
-            line_counter=CustomLineCounter(coord_left_x=1200, coord_left_y=250, coord_right_x=1550, coord_right_y=350),
-            place_id=place1.id
-            )
+            video_path="kab24.avi",
+            line_counter=CustomLineCounter(
+                coord_left_x=1200,
+                coord_left_y=250,
+                coord_right_x=1550,
+                coord_right_y=350,
+            ),
+            place_id=place1.id,
+        )
         session.add(camera1)
 
         camera2 = Camera(
-            video_path='lift.avi',
-            line_counter=CustomLineCounter(coord_left_x=1030, coord_left_y=950, coord_right_x=740, coord_right_y=400),
-            place_id=place2.id
-            )
+            video_path="lift.avi",
+            line_counter=CustomLineCounter(
+                coord_left_x=1030,
+                coord_left_y=950,
+                coord_right_x=740,
+                coord_right_y=400,
+            ),
+            place_id=place2.id,
+        )
         session.add(camera2)
         session.commit()
     session.close()
-        
 
     if len(session.query(EventHistory).all()) > 0:
         session.query(EventHistory).delete()
