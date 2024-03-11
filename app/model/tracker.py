@@ -115,10 +115,13 @@ def track_video(
     # open target video file
     with VideoSink(target_video_path, video_info) as sink:
         # loop over video frames
-        for index, frame in enumerate(generator):
-            current_frame = index
+        # for index, frame in enumerate(generator):
+        num_of_current_frame = 0
+        for frame in generator:
+            # current_frame = index
             # current_time = datetime.fromtimestamp(current_frame / video_info.fps)
-            current_time = datetime.now()
+            current_time = datetime.fromtimestamp(num_of_current_frame / video_info.fps)
+            # current_time = datetime.now()
 
             # model prediction on single frame and conversion to supervision Detections
             results = model(frame)
@@ -170,6 +173,7 @@ def track_video(
                 frame_annotator.annotate(frame=frame)
 
             sink.write_frame(frame)
+            num_of_current_frame+=1
 
 
 class FrameAnnotator:

@@ -73,11 +73,6 @@ class Camera(Base):
         self.line_counters = [line_counter]
         self.place_id = place_id
 
-    def get_current_time(self, video_info) -> datetime:
-        current_time = datetime.fromtimestamp(self._current_frame / video_info.fps)
-        return current_time
-
-        # return datetime.now()
 
 
 class CustomLineCounter(Base):
