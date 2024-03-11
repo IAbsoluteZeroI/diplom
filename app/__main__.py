@@ -43,9 +43,9 @@ def setup_bd():
             video_path="kab24.avi",
             line_counter=CustomLineCounter(
                 coord_left_x=1200,
-                coord_left_y=250,
-                coord_right_x=1550,
-                coord_right_y=350,
+                coord_left_y=750,
+                coord_right_x=1100,
+                coord_right_y=230,
             ),
             place_id=place1.id,
         )
@@ -54,10 +54,10 @@ def setup_bd():
         camera2 = Camera(
             video_path="lift.avi",
             line_counter=CustomLineCounter(
-                coord_left_x=1030,
-                coord_left_y=950,
-                coord_right_x=740,
-                coord_right_y=400,
+                coord_left_x=927,
+                coord_left_y=750,
+                coord_right_x=1100,
+                coord_right_y=227,
             ),
             place_id=place2.id,
         )
