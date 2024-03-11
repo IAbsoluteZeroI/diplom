@@ -160,56 +160,6 @@ class CustomLineCounter(Base):
                         # add the tracker_id to tracker_state with its current state
                         tracker_state[tracker_id] = is_in
 
-    # def update(self, detections: Detections, current_time: datetime, session):
-    #     vector = self.get_vector()
-    #     tracker_state = {}
-    #     for id in detections.class_id:
-    #         mask = np.array(
-    #             [class_id in [int(id)] for class_id in detections.class_id], dtype=bool
-    #         )
-    #         filtereddet = detections.filter(mask=mask, inplace=False)
-
-    #         for xyxy, confidence, class_id, tracker_id in filtereddet:
-    #             # handle detections with no tracker_id
-    #             if tracker_id is None:
-    #                 continue
-
-    #             # we check if all four anchors of bbox are on the same side of vector
-    #             x1, y1, x2, y2 = xyxy
-    #             anchors = [
-    #                 Point(x=x1, y=y1),
-    #                 Point(x=x1, y=y2),
-    #                 Point(x=x2, y=y1),
-    #                 Point(x=x2, y=y2),
-    #             ]
-    #             triggers = [vector.is_in(point=anchor) for anchor in anchors]
-
-    #             # detection is completely in or completely out
-    #             if len(set(triggers)) == 1:
-    #                 is_in = all(triggers)
-
-    #                 # update tracker_state based on the current detection
-    #                 tracker_state[tracker_id] = is_in
-
-    #                 # handle new detection
-    #                 if tracker_id not in self.events:
-    #                     self.events.append(EventHistory(
-    #                         line_counter=self,
-    #                         obj=objs[id],
-    #                         type=EventType.IN if is_in else EventType.OUT,
-    #                         date=current_time,
-    #                     ))
-    #                     session.add(self.events[-1])
-
-    #                 # handle detection crossing the line
-    #                 elif (is_in and self.events[-1].type == EventType.OUT) or \
-    #                     (not is_in and self.events[-1].type == EventType.IN):
-    #                     self.events.append(EventHistory(
-    #                         line_counter=self,
-    #                         obj=objs[id],
-    #                         type=EventType.IN if is_in else EventType.OUT,
-    #                         date=current_time,
-    #                     ))
 
     def get_result_dict(self) -> dict:
         return self.result_dict
