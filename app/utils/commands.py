@@ -20,8 +20,6 @@ from sqlalchemy import create_engine
 from ..model.tracker import track_video
 
 
-
-
 class TerminalExitCommand(ICommand):
     def __init__(self, executor: ITerminal):
         self._executor = executor
@@ -89,7 +87,9 @@ class TrackVideoCommand(ICommand):
         session = Session()
         session.add(self.camera)
         session.flush()
-        track_video(self.target_video_path, camera=self.camera, session=session, annotate=True)
+        track_video(
+            self.target_video_path, camera=self.camera, session=session, annotate=True
+        )
         session.commit()
         events = session.query(EventHistory).all()
         session.close()

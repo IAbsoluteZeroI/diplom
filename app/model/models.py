@@ -73,14 +73,11 @@ class Camera(Base):
         self.line_counters = [line_counter]
         self.place_id = place_id
 
-
     def get_current_time(self, video_info) -> datetime:
         current_time = datetime.fromtimestamp(self._current_frame / video_info.fps)
         return current_time
 
         # return datetime.now()
-
-
 
 
 class CustomLineCounter(Base):
@@ -109,7 +106,6 @@ class CustomLineCounter(Base):
         self.coord_right_y = coord_right_y
 
         self.events = []
-
 
     def update(self, detections: Detections, current_time: datetime, session):
         vector = self.get_vector()
@@ -150,18 +146,19 @@ class CustomLineCounter(Base):
                         # check if the previous state was different
                         if tracker_state[tracker_id] != is_in:
                             # create a new event and add it to the session
-                            self.events.append(EventHistory(
-                                line_counter=self,
-                                obj=objs[id],
-                                type=EventType.IN if is_in else EventType.OUT,
-                                date=current_time,
-                            ))
+                            self.events.append(
+                                EventHistory(
+                                    line_counter=self,
+                                    obj=objs[id],
+                                    type=EventType.IN if is_in else EventType.OUT,
+                                    date=current_time,
+                                )
+                            )
                             session.add(self.events[-1])
                             tracker_state[tracker_id] = is_in
                     else:
                         # add the tracker_id to tracker_state with its current state
                         tracker_state[tracker_id] = is_in
-
 
     # def update(self, detections: Detections, current_time: datetime, session):
     #     vector = self.get_vector()
@@ -186,7 +183,7 @@ class CustomLineCounter(Base):
     #                 Point(x=x2, y=y2),
     #             ]
     #             triggers = [vector.is_in(point=anchor) for anchor in anchors]
- 
+
     #             # detection is completely in or completely out
     #             if len(set(triggers)) == 1:
     #                 is_in = all(triggers)
@@ -213,14 +210,16 @@ class CustomLineCounter(Base):
     #                         type=EventType.IN if is_in else EventType.OUT,
     #                         date=current_time,
     #                     ))
-        
 
     def get_result_dict(self) -> dict:
         return self.result_dict
-    
+
     def get_vector(self):
-        return Vector(start=Point(self.coord_left_x, self.coord_left_y), end=Point(self.coord_right_x, self.coord_right_y))
-    
+        return Vector(
+            start=Point(self.coord_left_x, self.coord_left_y),
+            end=Point(self.coord_right_x, self.coord_right_y),
+        )
+
 
 class EventHistory(Base):
     __tablename__ = "event_history"
@@ -250,7 +249,3 @@ class EventHistory(Base):
 # for obj in session.query(Obj).all():
 #     objs[obj.id] = obj.name
 # session.close()
-
-
-
-

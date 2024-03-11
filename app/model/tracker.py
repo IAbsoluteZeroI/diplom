@@ -89,7 +89,6 @@ def match_detections_with_tracks(
     return tracker_ids
 
 
-
 class LineCounter:
     def __init__(self, events=None):
         self.events = events or []
@@ -98,7 +97,9 @@ class LineCounter:
         self.events.extend(events)
 
 
-def track_video(target_video_path, camera: Camera, session, annotate:bool=False) -> None:
+def track_video(
+    target_video_path, camera: Camera, session, annotate: bool = False
+) -> None:
     byte_tracker = BYTETracker(BYTETrackerArgs())
     box_annotator = BoxAnnotator(
         color=ColorPalette(), thickness=2, text_thickness=2, text_scale=1
@@ -106,7 +107,11 @@ def track_video(target_video_path, camera: Camera, session, annotate:bool=False)
     generator = get_video_frames_generator(camera.video_path)
     video_info = VideoInfo.from_video_path(camera.video_path)
     line_counter: CustomLineCounter = camera.line_counters[0]
-    frame_annotator = FrameAnnotator(class_name_dict=CLASS_NAMES_DICT, video_info=video_info, line_counter=line_counter)
+    frame_annotator = FrameAnnotator(
+        class_name_dict=CLASS_NAMES_DICT,
+        video_info=video_info,
+        line_counter=line_counter,
+    )
     # open target video file
     with VideoSink(target_video_path, video_info) as sink:
         # loop over video frames
@@ -158,13 +163,13 @@ def track_video(target_video_path, camera: Camera, session, annotate:bool=False)
                 frame=frame, detections=detections, labels=labels
             )
 
-
-            line_counter.update(detections=detections, current_time=current_time, session=session)
+            line_counter.update(
+                detections=detections, current_time=current_time, session=session
+            )
             if annotate:
                 frame_annotator.annotate(frame=frame)
 
             sink.write_frame(frame)
-
 
 
 class FrameAnnotator:
@@ -179,7 +184,7 @@ class FrameAnnotator:
         text_offset: float = 1.5,
         text_padding: int = 10,
         class_name_dict={},
-        video_info=[]
+        video_info=[],
     ):
         self.thickness: float = thickness
         self.color: Color = color
@@ -192,9 +197,7 @@ class FrameAnnotator:
         self.video_info = video_info
         self.line_counter = line_counter
 
-    def annotate(
-        self, frame: np.ndarray
-    ) -> np.ndarray:
+    def annotate(self, frame: np.ndarray) -> np.ndarray:
         vector = self.line_counter.get_vector()
         cv2.line(
             frame,

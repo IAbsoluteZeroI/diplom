@@ -8,3 +8,4 @@ __pycache__/
 app/utils/ByteTrack/build/
 app/utils/ByteTrack/yolox.egg-info/
 app/utils/ByteTrack/yolox/*.so
+postgres/

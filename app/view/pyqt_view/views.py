@@ -41,7 +41,6 @@ class MessageView(QDialog):
         self.confirmButton.clicked.connect(lambda: self.close())
 
 
-
 class TrackingView(QWidget):
     def __init__(self, main_window):
         super().__init__()
@@ -51,13 +50,14 @@ class TrackingView(QWidget):
 
         uic.loadUi(tracking_info_ui, self)
 
-        self.toMenuViewButton.clicked.connect(lambda:view_model.set_state('menu'))
+        self.toMenuViewButton.clicked.connect(lambda: view_model.set_state("menu"))
         self.__show_two_cameras()
-
 
     def __show_two_cameras(self):
         two_cameras = GetTwoCameras().execute()
-        if len(two_cameras) == 2 and (two_cameras[0] is not None or two_cameras[1] is not None):
+        if len(two_cameras) == 2 and (
+            two_cameras[0] is not None or two_cameras[1] is not None
+        ):
             self.camera1 = two_cameras[0]
             self.camera2 = two_cameras[1]
 
@@ -76,7 +76,6 @@ class TrackingView(QWidget):
         self.trackingInfo.append(f"<span><br/>Трекинг двух видео...</span>")
         self.trackingInfo.append(f"<span><br/><br/>Трекинг первого видео...</span>")
         QTimer.singleShot(100, self.__track_camera1)
-        
 
     def __track_camera1(self):
         # time.sleep(1)
@@ -88,11 +87,10 @@ class TrackingView(QWidget):
                 # event
                 f'<span>{event.obj} {event.type.name} {event.date.strftime("%S")}</br></span>'
             )
-        
+
         self.trackingInfo.append(f"<span><br/><br/>Трекинг второго видео...</span>")
         QTimer.singleShot(100, self.__track_camera2)
 
-    
     def __track_camera2(self):
         # time.sleep(1)
         # camera2_events = ['результат трекинга 2']

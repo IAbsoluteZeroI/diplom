@@ -18,29 +18,74 @@ def run_pyqt_app():
     sys.exit()
 
 
-def create_all():
-    engine = create_engine("postgresql+psycopg2://admin:root@127.0.0.1:5432/db")
-    engine.connect()
-    Base.metadata.create_all(engine)
-
-def clear_events():
+def setup_bd():
     from .model.models import EventHistory
-    from sqlalchemy import create_engine, MetaData, Table
+    from sqlalchemy import create_engine, MetaData
 
-    # Создаем соединение с базой данных
     engine = create_engine("postgresql+psycopg2://admin:root@127.0.0.1:5432/db")
     engine.connect()
 
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    session.query(EventHistory).delete()
-    session.commit()
+    metadata = MetaData()
+    metadata.reflect(bind=engine)
+
+    if len(metadata.tables) != 5:
+        Base.metadata.create_all(engine)
+        place1 = Place()
+        session.add(place1)
+
+        place2 = Place()
+        session.add(place2)
+
+        camera1 = Camera(
+            video_path='kab24.avi',
+            line_counter=CustomLineCounter(coord_left_x=1200, coord_left_y=250, coord_right_x=1550, coord_right_y=350),
+            place_id=place1.id
+            )
+        session.add(camera1)
+
+        camera2 = Camera(
+            video_path='lift.avi',
+            line_counter=CustomLineCounter(coord_left_x=1030, coord_left_y=950, coord_right_x=740, coord_right_y=400),
+            place_id=place2.id
+            )
+        session.add(camera2)
+        session.commit()
+    session.close()
+        
+
+    if len(session.query(EventHistory).all()) > 0:
+        session.query(EventHistory).delete()
+        session.commit()
     session.close()
 
-clear_events()
+
+setup_bd()
 run_pyqt_app()
-# create_all()
+
+
+# def create_all():
+#     engine = create_engine("postgresql+psycopg2://admin:root@127.0.0.1:5432/db")
+#     engine.connect()
+#     Base.metadata.create_all(engine)
+
+
+# def clear_events():
+#     from .model.models import EventHistory
+#     from sqlalchemy import create_engine
+
+#     # Создаем соединение с базой данных
+#     engine = create_engine("postgresql+psycopg2://admin:root@127.0.0.1:5432/db")
+#     engine.connect()
+
+#     Session = sessionmaker(bind=engine)
+#     session = Session()
+
+#     session.query(EventHistory).delete()
+#     session.commit()
+#     session.close()
 
 
 # json_db_manager.add_camera(Camera(
@@ -49,11 +94,6 @@ run_pyqt_app()
 #     place=Place()
 #     ))
 # print(json_db_manager.get_cameras())
-
-
-
-
-
 
 
 # engine = create_engine("postgresql+psycopg2://admin:root@127.0.0.1:5432/db")
