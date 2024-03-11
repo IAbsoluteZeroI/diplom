@@ -23,9 +23,25 @@ def create_all():
     engine.connect()
     Base.metadata.create_all(engine)
 
+def clear_events():
+    from .model.models import EventHistory
+    from sqlalchemy import create_engine, MetaData, Table
 
+    # Создаем соединение с базой данных
+    engine = create_engine("postgresql+psycopg2://admin:root@127.0.0.1:5432/db")
+    engine.connect()
+
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    session.query(EventHistory).delete()
+    session.commit()
+    session.close()
+
+clear_events()
 run_pyqt_app()
 # create_all()
+
 
 # json_db_manager.add_camera(Camera(
 #     line_counter=CustomLineCounter(coord_left=Point(x=927,y=1063), coord_right=Point(x=739,y=227)),

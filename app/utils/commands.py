@@ -10,13 +10,15 @@ from ..base.models_interfaces import (
 )
 from ..model.models import Camera, CustomLineCounter, EventHistory, Session
 from supervision.geometry.dataclasses import Point
-from ..utils.yolov8_model import CLASS_ID
+from ..model.yolov8_model import CLASS_ID
 from datetime import datetime
 import uuid
 from PyQt5.QtWidgets import QMainWindow
 from ..model.data.json_db_manager import json_db_manager
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
+from ..model.tracker import track_video
+
 
 
 
@@ -87,10 +89,9 @@ class TrackVideoCommand(ICommand):
         session = Session()
         session.add(self.camera)
         session.flush()
-        events = self.camera.track_video(self.target_video_path)
-        events = [session.merge(event) for event in events]
-        session.add_all(events)
+        track_video(self.target_video_path, camera=self.camera, session=session, annotate=True)
         session.commit()
+        events = session.query(EventHistory).all()
         session.close()
         return events
 
