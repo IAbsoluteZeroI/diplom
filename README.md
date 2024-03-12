@@ -1,7 +1,8 @@
 # Docker
 (inside linux-wsl)
+```
 bash docker.sh
-
+```
 # diplom)))
 
 ```
