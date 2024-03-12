@@ -80,7 +80,7 @@ class TrackingView(QWidget):
     def __start_tracking(self, annotate: bool):
         self.trackingInfo.append(f"<span><br/>Трекинг двух видео...</span>")
         self.trackingInfo.append(f"<span><br/><br/>Трекинг первого видео...</span>")
-        QTimer.singleShot(100, self.__track_camera1(annotate=annotate))
+        QTimer.singleShot(100, lambda: self.__track_camera1(annotate=annotate))
 
     def __track_camera1(self, annotate: bool):
         # time.sleep(1)
@@ -94,7 +94,7 @@ class TrackingView(QWidget):
             )
 
         self.trackingInfo.append(f"<span><br/><br/>Трекинг второго видео...</span>")
-        QTimer.singleShot(100, self.__track_camera2)
+        QTimer.singleShot(100, lambda: self.__track_camera2(annotate=annotate))
 
     def __track_camera2(self, annotate: bool):
         # time.sleep(1)

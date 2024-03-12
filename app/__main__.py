@@ -54,10 +54,10 @@ def setup_bd():
         camera2 = Camera(
             video_path="lift.avi",
             line_counter=CustomLineCounter(
-                coord_left_x=927,
-                coord_left_y=750,
-                coord_right_x=1100,
-                coord_right_y=227,
+                coord_left_x=1020,
+                coord_left_y=950,
+                coord_right_x=750,
+                coord_right_y=300,
             ),
             place_id=place2.id,
         )
