@@ -18,3 +18,4 @@ fix pyqt:
 export QT_QPA_PLATFORM="xcb"
 sudo apt install libxcb-xinerama0 libqt5x11extras5
 ```
+
