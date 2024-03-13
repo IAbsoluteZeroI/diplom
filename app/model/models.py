@@ -74,7 +74,6 @@ class Camera(Base):
         self.place_id = place_id
 
 
-
 class CustomLineCounter(Base):
     __tablename__ = "custom_line_counters"
 

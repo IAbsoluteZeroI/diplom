@@ -56,8 +56,9 @@ class TrackingView(QWidget):
     def __setup_buttons(self):
         self.toMenuViewButton.clicked.connect(lambda: view_model.set_state("menu"))
         self.startTrackingButton.clicked.connect(lambda: self.__start_tracking(False))
-        self.startTrackingAnnotationButton.clicked.connect(lambda: self.__start_tracking(True))
-        
+        self.startTrackingAnnotationButton.clicked.connect(
+            lambda: self.__start_tracking(True)
+        )
 
     def __show_two_cameras(self):
         two_cameras = GetTwoCameras().execute()
@@ -85,7 +86,9 @@ class TrackingView(QWidget):
     def __track_camera1(self, annotate: bool):
         # time.sleep(1)
         # camera1_events = ['результат трекинга 1']
-        camera1_events = TrackVideoCommand(self.camera1, "camera1_result.mp4", annotate=annotate).execute()
+        camera1_events = TrackVideoCommand(
+            self.camera1, "camera1_result.mp4", annotate=annotate
+        ).execute()
         self.trackingInfo.append(f"<span>Результат трекинга первой камеры:</span>")
         for event in camera1_events:
             self.trackingInfo.append(
@@ -99,7 +102,9 @@ class TrackingView(QWidget):
     def __track_camera2(self, annotate: bool):
         # time.sleep(1)
         # camera2_events = ['результат трекинга 2']
-        camera2_events = TrackVideoCommand(self.camera2, "camera2_result.mp4", annotate=annotate).execute()
+        camera2_events = TrackVideoCommand(
+            self.camera2, "camera2_result.mp4", annotate=annotate
+        ).execute()
         self.trackingInfo.append(f"<span>Результат трекинга второй камеры:</span>")
         for event in camera2_events:
             self.trackingInfo.append(

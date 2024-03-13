@@ -173,7 +173,7 @@ def track_video(
                 frame_annotator.annotate(frame=frame)
 
             sink.write_frame(frame)
-            num_of_current_frame+=1
+            num_of_current_frame += 1
 
 
 class FrameAnnotator:
