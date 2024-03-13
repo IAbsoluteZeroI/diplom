@@ -3,7 +3,8 @@
 ```
 bash docker.sh
 ```
-# diplom)))
+
+# Build from Source
 
 ```
 sudo apt update -y && sudo apt upgrade -y && sudo apt install g++ ffmpeg libsm6 libxext6 -y
