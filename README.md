@@ -1,5 +1,5 @@
 # Docker
-(inside linux-wsl)
+(inside linux/wsl)
 ```
 bash docker.sh
 ```
