@@ -71,7 +71,7 @@ class GetTwoCameras(ICommand):
 
 
 class TrackVideoCommand(ICommand):
-    def __init__(self, camera: Camera, target_video_path: str, annotate:bool=False):
+    def __init__(self, camera: Camera, target_video_path: str, annotate: bool = False):
         self.camera = camera
         self.target_video_path = target_video_path
         self.annotate = annotate
@@ -81,7 +81,10 @@ class TrackVideoCommand(ICommand):
         session.add(self.camera)
         session.flush()
         track_video(
-            self.target_video_path, camera=self.camera, session=session, annotate=self.annotate
+            self.target_video_path,
+            camera=self.camera,
+            session=session,
+            annotate=self.annotate,
         )
         session.commit()
         events = session.query(EventHistory).all()
