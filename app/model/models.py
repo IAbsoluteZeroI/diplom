@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import cv2
 import numpy as np
 from sqlalchemy import Column, Integer, String, ForeignKey, Enum, DateTime, Float
 from sqlalchemy.orm import relationship
@@ -10,7 +9,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from supervision.tools.detections import Detections
 
-from supervision.geometry.dataclasses import Rect, Point, Vector
+from supervision.geometry.dataclasses import Point, Vector
 from .event_type import EventType
 from sqlalchemy.orm import sessionmaker
 

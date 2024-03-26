@@ -18,7 +18,6 @@ from .basetrack import BaseTrack, TrackState
 
 
 class STrack(BaseTrack):
-
     def __init__(self, tlwh, score, max_n_features=100, from_det=True):
 
         # wait activate
@@ -189,7 +188,6 @@ class STrack(BaseTrack):
 
 
 class OnlineTracker(object):
-
     def __init__(
         self,
         model_folder,

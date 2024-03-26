@@ -55,10 +55,12 @@ class ICamera(ABC):
     video_path: str
 
     @abstractmethod
-    def get_current_time(self) -> datetime: ...
+    def get_current_time(self) -> datetime:
+        ...
 
     @abstractmethod
-    def track_video(self) -> dict: ...
+    def track_video(self) -> dict:
+        ...
 
 
 @dataclass

@@ -7,7 +7,6 @@ mm.lap.default_solver = "lap"
 
 
 class Evaluator(object):
-
     def __init__(self, data_root, seq_name, data_type):
         self.data_root = data_root
         self.seq_name = seq_name

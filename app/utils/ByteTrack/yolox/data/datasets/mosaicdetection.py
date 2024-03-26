@@ -121,10 +121,13 @@ class MosaicDetection(Dataset):
                     )
 
                 # suffix l means large image, while s means small image in mosaic aug.
-                (l_x1, l_y1, l_x2, l_y2), (s_x1, s_y1, s_x2, s_y2) = (
-                    get_mosaic_coordinate(
-                        mosaic_img, i_mosaic, xc, yc, w, h, input_h, input_w
-                    )
+                (l_x1, l_y1, l_x2, l_y2), (
+                    s_x1,
+                    s_y1,
+                    s_x2,
+                    s_y2,
+                ) = get_mosaic_coordinate(
+                    mosaic_img, i_mosaic, xc, yc, w, h, input_h, input_w
                 )
 
                 mosaic_img[l_y1:l_y2, l_x1:l_x2] = img[s_y1:s_y2, s_x1:s_x2]

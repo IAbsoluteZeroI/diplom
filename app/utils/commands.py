@@ -2,21 +2,9 @@ from typing import List
 from ..base.i_command import ICommand
 from ..base.i_terminal import ITerminal
 from ..base.models_interfaces import (
-    ICustomLineCounter,
-    IObj,
-    EventType,
     ICamera,
-    IEventHistory,
 )
-from ..model.models import Camera, CustomLineCounter, EventHistory, Session
-from supervision.geometry.dataclasses import Point
-from ..model.yolov8_model import CLASS_ID
-from datetime import datetime
-import uuid
-from PyQt5.QtWidgets import QMainWindow
-from ..model.data.json_db_manager import json_db_manager
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
+from ..model.models import Camera, EventHistory, Session
 from ..model.tracker import track_video
 
 
@@ -26,23 +14,6 @@ class TerminalExitCommand(ICommand):
 
     def execute(self) -> None:
         self._executor.close()
-
-
-class TrackSampleVideoCommand(ICommand):
-    def __init__(self, video_path: str, line_coords: list):
-        self._video_path = video_path
-        self._line_coords = line_coords
-
-    def execute(self) -> List[IEventHistory]:
-        return Camera(
-            aud=21,
-            line_counter=CustomLineCounter(
-                Point(self._line_coords[1][0], self._line_coords[1][1]),
-                Point(self._line_coords[0][0], self._line_coords[0][1]),
-                classes=CLASS_ID,
-            ),
-            video_path=self._video_path,
-        ).track_video("result.mp4")
 
 
 class GetCamera1Command(ICommand):
@@ -90,19 +61,3 @@ class TrackVideoCommand(ICommand):
         events = session.query(EventHistory).all()
         session.close()
         return events
-
-
-# class TrackTwoVideosCommand(ICommand):
-#     def __init__(self, camera1: ICamera, camera2: ICamera):
-#         self.camera1 = camera1
-#         self.camera2 = camera2
-
-#     def execute(self) -> dict:
-#         self.camera1.track_video("camera1_result.mp4")
-#         self.camera2.track_video("camera2_result.mp4")
-
-#         return {'camera1': self.camera1.line_counters[0].events, 'camera2': self.camera1.line_counters[0].events}
-
-
-class GetEventHistoryFromJson(ICommand):
-    pass

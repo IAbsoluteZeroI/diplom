@@ -1,8 +1,7 @@
 from PyQt5 import uic
-from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QTextBrowser
+from PyQt5.QtWidgets import QWidget, QLabel, QPushButton
 from PyQt5.QtWidgets import QDialog, QPushButton, QLabel
 from PyQt5 import uic, QtCore
-import time
 
 from .UI import *
 from ...view_model.main_view_model import view_model

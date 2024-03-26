@@ -3,4 +3,5 @@ from abc import ABC, abstractmethod
 
 class ICommand(ABC):
     @abstractmethod
-    def execute(self) -> None: ...
+    def execute(self) -> None:
+        ...

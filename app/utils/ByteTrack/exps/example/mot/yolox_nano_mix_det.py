@@ -32,7 +32,6 @@ class Exp(MyExp):
         self.warmup_epochs = 1
 
     def get_model(self, sublinear=False):
-
         def init_yolo(M):
             for m in M.modules():
                 if isinstance(m, nn.BatchNorm2d):
