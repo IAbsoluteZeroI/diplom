@@ -6,5 +6,5 @@ class ITerminal(ABC):
     def close(self) -> None:
         pass
 
-    def clear(slef) -> None:
+    def clear(self) -> None:
         pass

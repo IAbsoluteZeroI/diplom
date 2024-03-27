@@ -4,8 +4,6 @@ import sys
 from sqlalchemy.orm import sessionmaker
 from .model.models import Camera, Place, CustomLineCounter
 from .model.models import Base
-from icecream import install
-install()
 
 
 def run_pyqt_app():

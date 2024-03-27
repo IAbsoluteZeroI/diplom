@@ -15,16 +15,11 @@ from supervision.video.source import get_video_frames_generator
 from supervision.video.sink import VideoSink
 from supervision.draw.color import Color, ColorPalette
 from supervision.geometry.dataclasses import Rect
-from .yolov8_model import CLASS_ID, CLASS_ID_BY_NAME, CLASS_NAMES_DICT, model
+from .yolov8_model import CLASS_ID, CLASS_NAMES_DICT, model
 from .models import CustomLineCounter
 from datetime import datetime
-from .models import EventHistory, objs
-from supervision.geometry.dataclasses import Rect, Point
-from .event_type import EventType
-import time
-
-
-# [eq]
+from .models import EventHistory
+from supervision.geometry.dataclasses import Rect
 
 
 class VideoProcessor:
