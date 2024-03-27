@@ -54,4 +54,4 @@ class MainWindow(QMainWindow):
         elif view_model.command == "about_programm":
             MessageView(
                 "Выполнили студенты САФУ, 4 курс, 351018, \nАрхаров Никита Михайлович\nГолышев Алексей Витальевич."
-            )
+            ).show()

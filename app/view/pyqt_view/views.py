@@ -60,7 +60,11 @@ class TrackingView(QWidget):
         )
 
     def __show_two_cameras(self):
-        two_cameras = GetTwoCameras().execute()
+        try:
+            two_cameras = GetTwoCameras().execute()
+        except:
+            two_cameras = []
+            self.trackingInfo.append(f"<span>Не удалось подключиться к базе данных.</span>")
         if len(two_cameras) == 2 and (
             two_cameras[0] is not None or two_cameras[1] is not None
         ):
@@ -75,7 +79,9 @@ class TrackingView(QWidget):
                 info_about_two_cameras += "<br/>"
             self.trackingInfo.append(f"<span>{info_about_two_cameras}</span>")
         else:
-            self.trackingInfo.append(f"<span>Камер нет</span>")
+            self.trackingInfo.append(f"<span>Камер нет.</span>")
+            self.camera1 = None
+            self.camera2 = None 
 
     def __start_tracking(self, annotate: bool):
         self.trackingInfo.append(f"<span><br/>Трекинг двух видео...</span>")
@@ -83,30 +89,30 @@ class TrackingView(QWidget):
         QTimer.singleShot(100, lambda: self.__track_camera1(annotate=annotate))
 
     def __track_camera1(self, annotate: bool):
-        # time.sleep(1)
-        # camera1_events = ['результат трекинга 1']
-        camera1_events = TrackVideoCommand(
-            self.camera1, "camera1_result.mp4", annotate=annotate
-        ).execute()
-        self.trackingInfo.append(f"<span>Результат трекинга первой камеры:</span>")
-        for event in camera1_events:
-            self.trackingInfo.append(
-                # event
-                f'<span>{event.obj} {event.type.name} {event.date.strftime("%S")}</br></span>'
-            )
+        if self.camera1:
+            camera1_events = TrackVideoCommand(
+                self.camera1, "camera1_result.mp4", annotate=annotate
+            ).execute()
+            self.trackingInfo.append(f"<span>Результат трекинга первой камеры:</span>")
+            for event in camera1_events:
+                self.trackingInfo.append(
+                    # event
+                    f'<span>{event.obj} {event.type.name} {event.date.strftime("%S")}</br></span>'
+                )
+        else: self.trackingInfo.append(f"<span>Не удалось выполнить трекинг для камеры 1.</span>")
 
         self.trackingInfo.append(f"<span><br/><br/>Трекинг второго видео...</span>")
         QTimer.singleShot(100, lambda: self.__track_camera2(annotate=annotate))
 
     def __track_camera2(self, annotate: bool):
-        # time.sleep(1)
-        # camera2_events = ['результат трекинга 2']
-        camera2_events = TrackVideoCommand(
-            self.camera2, "camera2_result.mp4", annotate=annotate
-        ).execute()
-        self.trackingInfo.append(f"<span>Результат трекинга второй камеры:</span>")
-        for event in camera2_events:
-            self.trackingInfo.append(
-                # event
-                f'<span>{event.obj} {event.type.name} {event.date.strftime("%S")}</br></span>'
-            )
+        if self.camera2:
+            camera2_events = TrackVideoCommand(
+                self.camera2, "camera2_result.mp4", annotate=annotate
+            ).execute()
+            self.trackingInfo.append(f"<span>Результат трекинга второй камеры:</span>")
+            for event in camera2_events:
+                self.trackingInfo.append(
+                    # event
+                    f'<span>{event.obj} {event.type.name} {event.date.strftime("%S")}</br></span>'
+                )
+        else: self.trackingInfo.append(f"<span>Не удалось выполнить трекинг для камеры 2.</span>")

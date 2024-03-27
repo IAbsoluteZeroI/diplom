@@ -1,11 +1,11 @@
 from .view.pyqt_view.main_window import MainWindow
-from supervision.geometry.dataclasses import Point
 from PyQt5.QtWidgets import QApplication
 import sys
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from .model.models import Camera, Place, CustomLineCounter
 from .model.models import Base
+from icecream import install
+install()
 
 
 def run_pyqt_app():
@@ -22,53 +22,56 @@ def setup_bd():
     from .model.models import EventHistory
     from sqlalchemy import create_engine, MetaData
 
-    engine = create_engine("postgresql+psycopg2://admin:root@127.0.0.1:5432/db")
-    engine.connect()
+    try:
+        engine = create_engine("postgresql+psycopg2://admin:root@127.0.0.1:5432/db")
+        engine.connect()
 
-    Session = sessionmaker(bind=engine)
-    session = Session()
+        Session = sessionmaker(bind=engine)
+        session = Session()
 
-    metadata = MetaData()
-    metadata.reflect(bind=engine)
+        metadata = MetaData()
+        metadata.reflect(bind=engine)
 
-    if len(metadata.tables) != 5:
-        Base.metadata.create_all(engine)
-        place1 = Place()
-        session.add(place1)
+        if len(metadata.tables) != 5:
+            Base.metadata.create_all(engine)
+            place1 = Place()
+            session.add(place1)
 
-        place2 = Place()
-        session.add(place2)
+            place2 = Place()
+            session.add(place2)
 
-        camera1 = Camera(
-            video_path="kab24.avi",
-            line_counter=CustomLineCounter(
-                coord_left_x=1200,
-                coord_left_y=750,
-                coord_right_x=1100,
-                coord_right_y=230,
-            ),
-            place_id=place1.id,
-        )
-        session.add(camera1)
+            camera1 = Camera(
+                video_path="kab24.avi",
+                line_counter=CustomLineCounter(
+                    coord_left_x=1200,
+                    coord_left_y=750,
+                    coord_right_x=1100,
+                    coord_right_y=230,
+                ),
+                place_id=place1.id,
+            )
+            session.add(camera1)
 
-        camera2 = Camera(
-            video_path="lift.avi",
-            line_counter=CustomLineCounter(
-                coord_left_x=1020,
-                coord_left_y=950,
-                coord_right_x=750,
-                coord_right_y=300,
-            ),
-            place_id=place2.id,
-        )
-        session.add(camera2)
-        session.commit()
-    session.close()
+            camera2 = Camera(
+                video_path="lift.avi",
+                line_counter=CustomLineCounter(
+                    coord_left_x=1020,
+                    coord_left_y=950,
+                    coord_right_x=750,
+                    coord_right_y=300,
+                ),
+                place_id=place2.id,
+            )
+            session.add(camera2)
+            session.commit()
+        session.close()
 
-    if len(session.query(EventHistory).all()) > 0:
-        session.query(EventHistory).delete()
-        session.commit()
-    session.close()
+        if len(session.query(EventHistory).all()) > 0:
+            session.query(EventHistory).delete()
+            session.commit()
+        session.close()
+    except:
+        print('Error connecting to DB.')
 
 
 setup_bd()
