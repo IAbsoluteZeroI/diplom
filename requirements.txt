@@ -115,7 +115,6 @@ thop==0.1.1.post2209072238
 tifffile==2024.2.12
 torch==2.2.1
 torchvision==0.17.1
-tqdm==4.66.2
 traitlets==5.14.1
 triton==2.2.0
 typing-inspect==0.9.0
@@ -127,6 +126,5 @@ wcwidth==0.2.13
 Werkzeug==3.0.1
 widgetsnbextension==4.0.10
 xmltodict==0.13.0
-PyQt5==5.15.10
 sqlalchemy
 psycopg2
