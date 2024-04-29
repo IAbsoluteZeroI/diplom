@@ -1,8 +1,9 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 import subprocess
-
+from django.shortcuts import render, redirect
 # Create your views here.
 def index(request):
-    return HttpResponse("Hello, world. You're at the index.")
+    context = {}
+    return render(request, "furniture_monitoring/index.html", context)
 
