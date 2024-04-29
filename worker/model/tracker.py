@@ -12,29 +12,7 @@ from supervision.draw.color import ColorPalette
 from ..utils.settings import CLASS_ID, CLASS_NAMES_DICT, model, BYTETrackerArgs
 from ..utils.anotator import CustomLineCounterAnnotator
 from ..utils.counter import CustomLineCounter
-
-
-class VideoProcessor:
-    def __init__(
-        self,
-        video_path,
-    ):
-        self.video_path = video_path
-        self.video = cv2.VideoCapture(video_path)
-        self.width = int(self.video.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self.height = int(self.video.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-    def get_frame_by_order(self, frame_number):
-        self.video.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
-        ret, frame = self.video.read()
-        if ret:
-            return frame
-        else:
-            return None
-
-    def get_width_height(self):
-        return self.width, self.height
-
+from tqdm import tqdm
 
 # converts Detections into format that can be consumed by match_detections_with_tracks function
 def detections2boxes(detections: Detections) -> np.ndarray:
@@ -72,13 +50,13 @@ def track_video(video_path, start, end) -> None:
     video_info = VideoInfo.from_video_path(video_path)
     generator = get_video_frames_generator(video_path)
     line_counter = CustomLineCounter(start=start, end=end, classes = CLASS_ID)
-    box_annotator = BoxAnnotator(color=ColorPalette(), thickness=4, text_thickness=4, text_scale=2)
-    line_annotator = CustomLineCounterAnnotator(thickness=4, text_thickness=1, text_scale=0.5, class_name_dict = CLASS_NAMES_DICT, video_info = video_info)
+    box_annotator = BoxAnnotator(color=ColorPalette(), thickness=2, text_thickness=2, text_scale=1)
+    line_annotator = CustomLineCounterAnnotator(thickness=2, text_thickness=1, text_scale=0.5, class_name_dict = CLASS_NAMES_DICT, video_info = video_info)
 
     # open target video file
     with VideoSink('result.mp4', video_info) as sink:
         # loop over video frames
-        for frame in generator:
+        for frame in tqdm(generator, total=video_info.total_frames):
             # model prediction on single frame and conversion to supervision Detections
             results = model(frame)
             detections = Detections(
@@ -112,6 +90,5 @@ def track_video(video_path, start, end) -> None:
 
             line_counter.update(detections=detections)
             line_annotator.annotate(frame=frame, line_counter=line_counter)
-
 
             sink.write_frame(frame)
