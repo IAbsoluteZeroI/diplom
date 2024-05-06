@@ -1,17 +1,17 @@
 import cv2
 from typing import List
 import numpy as np
-from ..utils.ByteTrack.yolox.tracker.byte_tracker import STrack
+from utils.ByteTrack.yolox.tracker.byte_tracker import STrack
 from onemetric.cv.utils.iou import box_iou_batch
-from ..utils.ByteTrack.yolox.tracker.byte_tracker import BYTETracker
+from utils.ByteTrack.yolox.tracker.byte_tracker import BYTETracker
 from supervision.tools.detections import Detections, BoxAnnotator
 from supervision.video.dataclasses import VideoInfo
 from supervision.video.source import get_video_frames_generator
 from supervision.video.sink import VideoSink
 from supervision.draw.color import ColorPalette
-from ..utils.settings import CLASS_ID, CLASS_NAMES_DICT, model, BYTETrackerArgs
-from ..utils.anotator import CustomLineCounterAnnotator
-from ..utils.counter import CustomLineCounter
+from utils.settings import CLASS_ID, CLASS_NAMES_DICT, model, BYTETrackerArgs
+from utils.anotator import CustomLineCounterAnnotator
+from utils.counter import CustomLineCounter
 from tqdm import tqdm
 
 # converts Detections into format that can be consumed by match_detections_with_tracks function

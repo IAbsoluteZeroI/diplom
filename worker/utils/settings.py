@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 from dataclasses import dataclass
 
-MODEL = "worker/utils/640.engine"
+MODEL = "utils/640.engine"
 model = YOLO(MODEL)
 #model.fuse()
 
