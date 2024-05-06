@@ -8,3 +8,10 @@ services:
       - .\worker:/app
     ports:
       - 8000:8000
+  web:
+    build: diplom_django
+    command: bash -c "cd /app && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .\diplom_django:/app
+    ports:
+      - 8080:8000

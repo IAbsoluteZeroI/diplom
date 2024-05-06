@@ -1,0 +1,7 @@
+.vscode
+.ipynb_checkpoints
+diplom_django/diplom_django/__pycache__/
+diplom_django/furniture_monitoring/__pycache__/
+diplom_django/furniture_monitoring/migrations/__pycache__/
+*.py[cod]
+*$py.class

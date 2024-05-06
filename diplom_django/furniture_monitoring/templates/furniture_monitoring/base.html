@@ -1,0 +1,25 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'furniture_monitoring/css/style.css' %}">
+        {% block css_additional %}
+        {% endblock css_additional %}
+        <title>
+            {% block title %}
+            {% endblock title %}
+        </title> 
+    </head>
+    <body>
+
+        {% block content %}
+        {% endblock content %}
+
+        {% block js_additional %}
+        {% endblock js_additional %}
+
+    </body>
+</html>
