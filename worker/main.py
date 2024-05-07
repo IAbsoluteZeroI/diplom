@@ -1,6 +1,7 @@
 import argparse
 from supervision.geometry.dataclasses import Point
 from model.tracker import track_video
+# import multiprocessing
 
 # start = Point(x=1200, y=750)
 # end = Point(x=1100, y=230)
@@ -22,4 +23,6 @@ if __name__ == "__main__":
     end = Point(x=int(args.end_xy[0]), y=int(args.end_xy[1])) if args.end_xy else Point(x=1100, y=230)
 
     main(args.file_path, args.camera_id, start, end)
+    # process = multiprocessing.Process(target=main, args=(args.file_path, args.camera_id, start, end))
+    # process.start()
 

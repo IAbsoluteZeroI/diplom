@@ -58,7 +58,7 @@ def track_video(video_path, start, end) -> None:
         # loop over video frames
         for frame in tqdm(generator, total=video_info.total_frames):
             # model prediction on single frame and conversion to supervision Detections
-            results = model(frame)
+            results = model(frame, task='detect')
             detections = Detections(
                 xyxy=results[0].boxes.xyxy.cpu().numpy(),
                 confidence=results[0].boxes.conf.cpu().numpy(),

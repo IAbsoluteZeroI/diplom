@@ -2,7 +2,8 @@ from ultralytics import YOLO
 from dataclasses import dataclass
 
 MODEL = "utils/640.engine"
-model = YOLO(MODEL)
+# MODEL = "utils/640.onnx"
+model = YOLO(MODEL, task='detect')
 #model.fuse()
 
 CLASS_NAMES_DICT = {0: 'chair', 1: 'person', 2: 'interactive whiteboard', 3: 'keyboard', 4: 'laptop', 5: 'monitor', 6: 'pc', 7: 'table'}
