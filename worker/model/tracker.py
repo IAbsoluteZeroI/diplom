@@ -14,6 +14,7 @@ from utils.anotator import CustomLineCounterAnnotator
 from utils.counter import CustomLineCounter
 from tqdm import tqdm
 
+
 # converts Detections into format that can be consumed by match_detections_with_tracks function
 def detections2boxes(detections: Detections) -> np.ndarray:
     return np.hstack((detections.xyxy, detections.confidence[:, np.newaxis]))
@@ -45,11 +46,11 @@ def match_detections_with_tracks(
 
 
 
-def track_video(video_path, start, end) -> None:
+def track_video(video_path, start, end, camera_id) -> None:
     byte_tracker = BYTETracker(BYTETrackerArgs())
     video_info = VideoInfo.from_video_path(video_path)
     generator = get_video_frames_generator(video_path)
-    line_counter = CustomLineCounter(start=start, end=end, classes = CLASS_ID)
+    line_counter = CustomLineCounter(start=start, end=end, classes = CLASS_ID,camera_id = camera_id, class_name_dict = CLASS_NAMES_DICT)
     box_annotator = BoxAnnotator(color=ColorPalette(), thickness=2, text_thickness=2, text_scale=1)
     line_annotator = CustomLineCounterAnnotator(thickness=2, text_thickness=1, text_scale=0.5, class_name_dict = CLASS_NAMES_DICT, video_info = video_info)
 
@@ -58,7 +59,7 @@ def track_video(video_path, start, end) -> None:
         # loop over video frames
         for frame in tqdm(generator, total=video_info.total_frames):
             # model prediction on single frame and conversion to supervision Detections
-            results = model(frame, task='detect')
+            results = model(frame)
             detections = Detections(
                 xyxy=results[0].boxes.xyxy.cpu().numpy(),
                 confidence=results[0].boxes.conf.cpu().numpy(),
@@ -86,9 +87,12 @@ def track_video(video_path, start, end) -> None:
                 f"id{tracker_id} {CLASS_NAMES_DICT[class_id]} {confidence:0.2f}"
                 for _, confidence, class_id, tracker_id
                 in detections]
+            
             frame = box_annotator.annotate(frame=frame, detections=detections, labels=labels)
 
             line_counter.update(detections=detections)
             line_annotator.annotate(frame=frame, line_counter=line_counter)
 
             sink.write_frame(frame)
+            
+        

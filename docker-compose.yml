@@ -7,13 +7,28 @@ services:
     stdin_open: true
     tty: true
     volumes:
-      - .\worker:/app
-    ports:
-      - 8000:8000
+      - ./worker:/app
+    # ports:
+    #   - 8000:8000
+    depends_on:
+      - redis
+    links:
+      - redis
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
   web:
     build: diplom_django
     command: bash -c "cd /app && python manage.py runserver 0.0.0.0:8000"
     volumes:
-      - .\diplom_django:/app
+      - ./diplom_django:/app
     ports:
       - 8080:8000
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"

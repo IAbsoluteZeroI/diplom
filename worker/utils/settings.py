@@ -2,11 +2,19 @@ from ultralytics import YOLO
 from dataclasses import dataclass
 
 MODEL = "utils/640.engine"
-# MODEL = "utils/640.onnx"
-model = YOLO(MODEL, task='detect')
-#model.fuse()
+model = YOLO(MODEL)
 
-CLASS_NAMES_DICT = {0: 'chair', 1: 'person', 2: 'interactive whiteboard', 3: 'keyboard', 4: 'laptop', 5: 'monitor', 6: 'pc', 7: 'table'}
+CLASS_NAMES_DICT = {
+    0: 'chair', 
+    1: 'person', 
+    2: 'interactive whiteboard', 
+    3: 'keyboard', 
+    4: 'laptop', 
+    5: 'monitor', 
+    6: 'pc', 
+    7: 'table'
+}
+
 CLASS_ID = [0, 1, 2, 3, 4, 5, 6, 7]
 
 CLASS_ID_BY_NAME = {
@@ -19,7 +27,6 @@ CLASS_ID_BY_NAME = {
     "pc": 6,
     "table": 7,
 }
-
 
 @dataclass(frozen=True)
 class BYTETrackerArgs:

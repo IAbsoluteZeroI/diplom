@@ -2,20 +2,31 @@ from supervision.tools.detections import Detections
 from supervision.geometry.dataclasses import Point, Vector
 from typing import List, Dict
 import numpy as np
+import time
+
+import asyncio
+import aioredis
+
+
 
 
 class CustomLineCounter:
-    def __init__(self, start: Point, end: Point, classes: List):
+    def __init__(self, start: Point, end: Point, classes: List, camera_id: int, class_name_dict: dict):
         self.vector = Vector(start=start, end=end)
         self.tracker_state: Dict[str, bool] = {}
         self.start = start
         self.end = end
+        self.camera_id = camera_id
+        self.class_name_dict = class_name_dict
+        self.redis = aioredis.from_url("redis://redis")
         self.result_dict = {
             # int(class_id): {"in_count": int(0), "out_count": int(0)}
             int(class_id): {"in": [], "out": []}
             for class_id in classes
         }
-        self.parent = None
+
+    async def send_to_redis(self, key, value):
+        await self.redis.set(key, value)
 
     def update(self, detections: Detections):
         for id in detections.class_id:
@@ -56,10 +67,14 @@ class CustomLineCounter:
                 self.tracker_state[tracker_id] = tracker_state
                 if tracker_state:
                     # self.result_dict[int(id)]["in_count"] += 1
-                    self.result_dict[int(id)]["in"].append(2)
+                    # self.result_dict[int(id)]["in"].append(2)
+                    print(f'{self.camera_id} IN :: {self.class_name_dict[class_id]}')
+                    self.send_to_redis(tracker_id, 'in')
+                    #time.sleep(1)
+                    
                 else:
                     # self.result_dict[int(id)]["out_count"] += 1
-                    self.result_dict[int(id)]["out"].append(1)
-
-    def get_result_dict(self) -> dict:
-        return self.result_dict
+                    # self.result_dict[int(id)]["out"].append(1)
+                    print(f'{self.camera_id} OUT :: {self.class_name_dict[class_id]}')
+                    self.send_to_redis(tracker_id, 'out')
+                    #time.sleep(1)
