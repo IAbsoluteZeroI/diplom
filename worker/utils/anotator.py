@@ -1,9 +1,11 @@
 import cv2
 import numpy as np
-from .counter import CustomLineCounter
 from supervision.draw.color import Color
-from .settings import CLASS_NAMES_DICT
 from supervision.geometry.dataclasses import Rect
+
+from .counter import CustomLineCounter
+from .settings import CLASS_NAMES_DICT
+
 
 class CustomLineCounterAnnotator:
     def __init__(
@@ -28,7 +30,9 @@ class CustomLineCounterAnnotator:
         self.class_name_dict = class_name_dict
         self.video_info = video_info
 
-    def annotate(self, frame: np.ndarray, line_counter: CustomLineCounter) -> np.ndarray:
+    def annotate(
+        self, frame: np.ndarray, line_counter: CustomLineCounter
+    ) -> np.ndarray:
         cv2.line(
             frame,
             line_counter.vector.start.as_xy_int_tuple(),

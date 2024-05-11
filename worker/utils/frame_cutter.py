@@ -1,6 +1,7 @@
 import cv2
 from supervision.video.dataclasses import VideoInfo
 
+
 def extract_frames(video_path, output_folder):
     # Получаем информацию о видео
     video_info = VideoInfo.from_video_path(video_path)

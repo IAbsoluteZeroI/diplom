@@ -1,17 +1,22 @@
-from supervision.tools.detections import Detections
-from supervision.geometry.dataclasses import Point, Vector
-from typing import List, Dict
-import numpy as np
-import time
-
 import asyncio
+import time
+from typing import Dict, List
+
 import aioredis
-
-
+import numpy as np
+from supervision.geometry.dataclasses import Point, Vector
+from supervision.tools.detections import Detections
 
 
 class CustomLineCounter:
-    def __init__(self, start: Point, end: Point, classes: List, camera_id: int, class_name_dict: dict):
+    def __init__(
+        self,
+        start: Point,
+        end: Point,
+        classes: List,
+        camera_id: int,
+        class_name_dict: dict,
+    ):
         self.vector = Vector(start=start, end=end)
         self.tracker_state: Dict[str, bool] = {}
         self.start = start
@@ -68,13 +73,13 @@ class CustomLineCounter:
                 if tracker_state:
                     # self.result_dict[int(id)]["in_count"] += 1
                     # self.result_dict[int(id)]["in"].append(2)
-                    print(f'{self.camera_id} IN :: {self.class_name_dict[class_id]}')
-                    self.send_to_redis(tracker_id, 'in')
-                    #time.sleep(1)
-                    
+                    print(f"{self.camera_id} IN :: {self.class_name_dict[class_id]}")
+                    self.send_to_redis(tracker_id, "in")
+                    # time.sleep(1)
+
                 else:
                     # self.result_dict[int(id)]["out_count"] += 1
                     # self.result_dict[int(id)]["out"].append(1)
-                    print(f'{self.camera_id} OUT :: {self.class_name_dict[class_id]}')
-                    self.send_to_redis(tracker_id, 'out')
-                    #time.sleep(1)
+                    print(f"{self.camera_id} OUT :: {self.class_name_dict[class_id]}")
+                    self.send_to_redis(tracker_id, "out")
+                    # time.sleep(1)
