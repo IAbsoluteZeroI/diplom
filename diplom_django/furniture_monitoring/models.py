@@ -15,17 +15,16 @@ class LineCounter(models.Model):
     camera = models.ForeignKey(
         "Camera", on_delete=models.CASCADE, related_name="line_counters"
     )
-    coord_left = ArrayField(models.FloatField(), size=2)
-    coord_right = ArrayField(models.FloatField(), size=2)
+    start_x = models.FloatField(default=0)
+    start_y = models.FloatField(default=0)
+    end_x = models.FloatField(default=0)
+    end_y = models.FloatField(default=0)
     related_line_counter = models.ForeignKey(
         "LineCounter",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="related_line_counters",
-    )
-    event_history = models.ForeignKey(
-        "EventHistory", on_delete=models.CASCADE, related_name="event_histories"
     )
 
     def __str__(self):
@@ -74,6 +73,13 @@ class EventHistory(models.Model):
     date = models.DateTimeField()
     object = models.ForeignKey(
         Object, on_delete=models.CASCADE, related_name="event_objects"
+    )
+    line_counter = models.ForeignKey(
+        LineCounter,
+        on_delete=models.CASCADE,
+        related_name="event_histories",
+        null=True,
+        blank=True,
     )
 
     def __str__(self):
