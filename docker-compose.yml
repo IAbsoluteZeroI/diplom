@@ -28,7 +28,20 @@ services:
       - ./diplom_django:/app
     ports:
       - 8080:8000
+    depends_on:
+      - db
   redis:
     image: redis
     ports:
       - "6379:6379"
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+
+volumes:
+  postgres_data:
