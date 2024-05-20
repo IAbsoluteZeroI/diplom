@@ -8,8 +8,6 @@ services:
     tty: true
     volumes:
       - ./worker:/app
-    # ports:
-    #   - 8000:8000
     depends_on:
       - redis
     links:
@@ -21,19 +19,30 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+              
   web:
     build: diplom_django
-    command: bash -c "cd /app && python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_PASSWORD=admin
+      - DJANGO_SUPERUSER_EMAIL=kurwabober@example.com
+    command: >
+      bash -c "
+      python3 manage.py migrate &&
+      python3 manage.py createsuperuser --noinput &&
+      python3 manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./diplom_django:/app
     ports:
       - 8080:8000
     depends_on:
       - db
+
   redis:
     image: redis
     ports:
       - "6379:6379"
+      
   db:
     image: postgres:latest
     environment:
