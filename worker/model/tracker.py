@@ -1,3 +1,5 @@
+import sys
+import time
 from typing import List
 
 import cv2
@@ -9,7 +11,6 @@ from supervision.video.dataclasses import VideoInfo
 from supervision.video.sink import VideoSink
 from supervision.video.source import get_video_frames_generator
 from tqdm import tqdm
-
 from utils.anotator import CustomLineCounterAnnotator
 from utils.ByteTrack.yolox.tracker.byte_tracker import BYTETracker, STrack
 from utils.counter import CustomLineCounter
@@ -46,7 +47,7 @@ def match_detections_with_tracks(
     return tracker_ids
 
 
-def track_video(video_path, start, end, camera_id) -> None:
+async def track_video(video_path, start, end, camera_id) -> None:
     byte_tracker = BYTETracker(BYTETrackerArgs())
     video_info = VideoInfo.from_video_path(video_path)
     generator = get_video_frames_generator(video_path)
@@ -67,8 +68,6 @@ def track_video(video_path, start, end, camera_id) -> None:
         class_name_dict=CLASS_NAMES_DICT,
         video_info=video_info,
     )
-
-    # open target video file
     with VideoSink("result.mp4", video_info) as sink:
         # loop over video frames
         for frame in tqdm(generator, total=video_info.total_frames):
@@ -115,7 +114,7 @@ def track_video(video_path, start, end, camera_id) -> None:
                 frame=frame, detections=detections, labels=labels
             )
 
-            line_counter.update(detections=detections)
+            await line_counter.update(detections=detections)
             line_annotator.annotate(frame=frame, line_counter=line_counter)
 
             sink.write_frame(frame)
