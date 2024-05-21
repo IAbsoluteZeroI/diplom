@@ -3,8 +3,15 @@ from typing import Dict, List
 
 import aioredis
 import numpy as np
+from pydantic import BaseModel
 from supervision.geometry.dataclasses import Point, Vector
 from supervision.tools.detections import Detections
+
+
+class EventInfo(BaseModel):
+    camera_id: int
+    class_name: str
+    event_type: str
 
 
 class CustomLineCounter:
@@ -76,10 +83,30 @@ class CustomLineCounter:
                 self.tracker_state[tracker_id] = tracker_state
                 if tracker_state:
                     print(f"{self.camera_id} IN :: {self.class_name_dict[class_id]}")
-                    tasks.append(self.send_to_redis(tracker_id, "in"))
+                    tasks.append(
+                        self.send_to_redis(
+                            tracker_id,
+                            EventInfo(
+                                camera_id=self.camera_id,
+                                class_name=self.class_name_dict[class_id],
+                                event_type="IN",
+                            ).json(),
+                        )
+                    )
+                    # tasks.append(self.send_to_redis(tracker_id, "in"))
                 else:
                     print(f"{self.camera_id} OUT :: {self.class_name_dict[class_id]}")
-                    tasks.append(self.send_to_redis(tracker_id, "out"))
+                    tasks.append(
+                        self.send_to_redis(
+                            tracker_id,
+                            EventInfo(
+                                camera_id=self.camera_id,
+                                class_name=self.class_name_dict[class_id],
+                                event_type="OUT",
+                            ).json(),
+                        )
+                    )
+                    # tasks.append(self.send_to_redis(tracker_id, "out"))
 
         if tasks:
             await asyncio.gather(*tasks)
