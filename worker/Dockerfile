@@ -23,3 +23,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app/
 #CMD ["python3", "./main.py --file-path "test.avi" --start-xy 1200 750 --end-xy 1100 230 --camera-id 123"]
+
+RUN groupadd -r docker-gpus && adduser `whoami` docker-gpus
+# RUN apt-get update && apt-get install -y nvidia-container-toolkit
+# RUN systemctl enable --now nvidia-persistenced.service
+# ENV NVIDIA_VISIBLE_DEVICES all
+# ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
+#
+# CMD ["bash"]
