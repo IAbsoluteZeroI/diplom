@@ -39,9 +39,9 @@ class CustomLineCounter:
         key = str(key)
         value = str(value)
         await self.redis.set(key, value)
-        result = await self.redis.get(key)
-        decoded_result = result.decode("utf-8") if result else None
-        print(f"Значение для ключа '{key}' установлено: {decoded_result}")
+        # result = await self.redis.get(key)
+        # decoded_result = result.decode("utf-8") if result else None
+        # print(f"Значение для ключа '{key}' установлено: {decoded_result}")
 
     async def update(self, detections: Detections):
         tasks = []

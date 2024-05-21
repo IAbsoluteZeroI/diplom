@@ -20,6 +20,8 @@ services:
   #             count: 1
   #             capabilities: [gpu]
               
+  worker:
+    build: worker
   web:
     build: diplom_django
     environment:
