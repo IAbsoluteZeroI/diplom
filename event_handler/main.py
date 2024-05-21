@@ -28,7 +28,7 @@ class Handler:
             if json_data:
                 instance = model.parse_raw(json_data)
                 instances.append(instance)
-                await self.redis.delete(key)
+                # await self.redis.delete(key)
         return instances
 
     async def close(self):
