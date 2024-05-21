@@ -28,9 +28,7 @@ services:
       - DJANGO_SUPERUSER_EMAIL=kurwabober@example.com
     command: >
       bash -c "
-      python3 manage.py migrate &&
-      python3 manage.py createsuperuser --noinput &&
-      python3 manage.py runserver 0.0.0.0:8000"
+      python3 run.py"
     volumes:
       - ./diplom_django:/app
     ports:
