@@ -20,9 +20,9 @@ RUN apt install --fix-missing -y g++ ffmpeg libsm6 libxext6
 COPY requirements.txt /app/
 RUN pip install 'numpy<1.24'
 RUN pip install --no-cache-dir -r requirements.txt
-
+RUN groupadd -r docker-gpus && adduser `whoami` docker-gpus
 COPY . /app/
 #CMD ["python3", "./main.py --file-path "test.avi" --start-xy 1200 750 --end-xy 1100 230 --camera-id 123"]
 
-RUN groupadd -r docker-gpus && adduser `whoami` docker-gpus
+
 

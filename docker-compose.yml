@@ -3,26 +3,16 @@ version: '3'
 services:
   worker:
     build: worker
-    volumes:
-      - ./worker:/app
-    # environment:
-    #   - NVIDIA_VISIBLE_DEVICES=all
-    depends_on:
-      - redis
-    links:
-      - redis
+    stop_grace_period: 5s
     deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+      update_config:
+        failure_action: rollback
+    labels:
+      - "auto_remove=true"
+  
   web:
     build: diplom_django
-    # runtime: nvidia
     environment:
-      # - NVIDIA_VISIBLE_DEVICES=all
       - DJANGO_SUPERUSER_USERNAME=admin
       - DJANGO_SUPERUSER_PASSWORD=admin
       - DJANGO_SUPERUSER_EMAIL=kurwabober@example.com
@@ -36,13 +26,6 @@ services:
       - 8080:8000
     depends_on:
       - db
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
 
   redis:
     image: redis
@@ -57,6 +40,7 @@ services:
       - POSTGRES_DB=db
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+
   event_handler:
     build: event_handler 
     stdin_open: true

@@ -1,6 +1,6 @@
 import asyncio
 from typing import Dict, List
-
+import random
 import aioredis
 import numpy as np
 from pydantic import BaseModel
@@ -85,7 +85,7 @@ class CustomLineCounter:
                     print(f"{self.camera_id} IN :: {self.class_name_dict[class_id]}")
                     tasks.append(
                         self.send_to_redis(
-                            tracker_id,
+                            random.randint(100000, 999999),
                             EventInfo(
                                 camera_id=self.camera_id,
                                 class_name=self.class_name_dict[class_id],
@@ -93,12 +93,12 @@ class CustomLineCounter:
                             ).json(),
                         )
                     )
-                    # tasks.append(self.send_to_redis(tracker_id, "in"))
+                    print(f"{self.camera_id}: {self.class_name_dict[class_id]} -> IN")
                 else:
                     print(f"{self.camera_id} OUT :: {self.class_name_dict[class_id]}")
                     tasks.append(
                         self.send_to_redis(
-                            tracker_id,
+                            random.randint(100000, 999999),
                             EventInfo(
                                 camera_id=self.camera_id,
                                 class_name=self.class_name_dict[class_id],
@@ -106,7 +106,7 @@ class CustomLineCounter:
                             ).json(),
                         )
                     )
-                    # tasks.append(self.send_to_redis(tracker_id, "out"))
+                    print(f"{self.camera_id}: {self.class_name_dict[class_id]} -> OUT")
 
         if tasks:
             await asyncio.gather(*tasks)

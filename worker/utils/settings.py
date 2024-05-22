@@ -4,7 +4,7 @@ from ultralytics import YOLO
 
 # MODEL = "utils/640.engine"
 MODEL = "utils/640.engine"
-model = YOLO(MODEL)
+model = YOLO(MODEL, verbose=False)
 
 CLASS_NAMES_DICT = {
     0: "chair",
@@ -17,19 +17,9 @@ CLASS_NAMES_DICT = {
     7: "table",
 }
 
-CLASS_ID = [0, 1, 2, 3, 4, 5, 6, 7]
+CLASS_ID = list(range(8))
 
-CLASS_ID_BY_NAME = {
-    "chair": 0,
-    "person": 1,
-    "interactive whiteboard": 2,
-    "keyboard": 3,
-    "laptop": 4,
-    "monitor": 5,
-    "pc": 6,
-    "table": 7,
-}
-
+CLASS_ID_BY_NAME = {v: k for k, v in CLASS_NAMES_DICT.items()}
 
 @dataclass(frozen=True)
 class BYTETrackerArgs:
