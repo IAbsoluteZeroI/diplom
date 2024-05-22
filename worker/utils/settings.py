@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from ultralytics import YOLO
 
 # MODEL = "utils/640.engine"
-MODEL = "utils/640.onnx"
+MODEL = "utils/640.engine"
 model = YOLO(MODEL)
 
 CLASS_NAMES_DICT = {

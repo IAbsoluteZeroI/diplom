@@ -24,3 +24,4 @@ tensorrt==8.5.2.2
 aioredis
 asyncio
 pydantic
+onnxruntime-gpu

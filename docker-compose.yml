@@ -3,9 +3,26 @@ version: '3'
 services:
   worker:
     build: worker
+    volumes:
+      - ./worker:/app
+    # environment:
+    #   - NVIDIA_VISIBLE_DEVICES=all
+    depends_on:
+      - redis
+    links:
+      - redis
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
   web:
     build: diplom_django
+    # runtime: nvidia
     environment:
+      # - NVIDIA_VISIBLE_DEVICES=all
       - DJANGO_SUPERUSER_USERNAME=admin
       - DJANGO_SUPERUSER_PASSWORD=admin
       - DJANGO_SUPERUSER_EMAIL=kurwabober@example.com
@@ -19,6 +36,13 @@ services:
       - 8080:8000
     depends_on:
       - db
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 
   redis:
     image: redis

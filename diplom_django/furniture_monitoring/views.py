@@ -6,7 +6,22 @@ from django.shortcuts import redirect, render, reverse
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 
+import docker
+client = docker.from_env()
+
 from .models import Camera, LineCounter
+
+def get_next_worker_name():
+    existing_containers = client.containers.list(all=True)
+    existing_names = [container.name for container in existing_containers]
+
+    # Начинаем счет с worker_1
+    i = 1
+    while True:
+        candidate_name = f"worker_{i}"
+        if candidate_name not in existing_names:
+            return candidate_name
+        i += 1
 
 
 # Create your views here.
@@ -53,6 +68,18 @@ def track_cameras_view(request):
             )
             print(selected_line_counters)
             # Call your function to start tracking with the selected line counters
+            container = client.containers.run("diplom-worker",
+                                              ["python3", "main.py", "--file-path", "kab24.avi", "--camera-id", "1", "--start-xy", "1200", "750", "--end-xy", "1100", "230"],
+                                              remove=True,
+                                              name = get_next_worker_name(),
+                                              network="diplom_default",
+                                              device_requests=[
+                                                  docker.types.DeviceRequest(
+                                                      count=-1,
+                                                      capabilities=[['gpu']
+                                                                    ])])
+
+            print(container.logs().decode('utf-8'))
             # redirect to the same page after processing
             return redirect(reverse("track_cameras"))
         elif action == "stop_tracking":
