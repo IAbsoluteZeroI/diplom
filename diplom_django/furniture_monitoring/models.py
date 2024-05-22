@@ -34,6 +34,7 @@ class LineCounter(models.Model):
 class Camera(models.Model):
     id = models.AutoField(primary_key=True)
     place = models.ForeignKey("Place", on_delete=models.CASCADE, related_name="cameras")
+    video_path = models.CharField(max_length=255, blank=True, null=True, default="")
 
     def __str__(self):
         return f"Camera {self.id} in Place {self.place.id}"
