@@ -3,9 +3,10 @@ import subprocess
 from django.db import connection
 from django.http import HttpResponse
 from django.shortcuts import redirect, render, reverse
-from .models import Camera, LineCounter
-from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_POST
+
+from .models import Camera, LineCounter
 
 
 # Create your views here.

@@ -1,25 +1,6 @@
 version: '3'
 
 services:
-  # worker:
-  #   build: worker
-  #   command: bash
-  #   stdin_open: true
-  #   tty: true
-  #   volumes:
-  #     - ./worker:/app
-  #   depends_on:
-  #     - redis
-  #   links:
-  #     - redis
-  #   deploy:
-  #     resources:
-  #       reservations:
-  #         devices:
-  #           - driver: nvidia
-  #             count: 1
-  #             capabilities: [gpu]
-              
   worker:
     build: worker
   web:
@@ -32,7 +13,8 @@ services:
       bash -c "
       python3 run.py"
     volumes:
-      - ./diplom_django:/app
+      - ./diplom_django:/app 
+      - //var/run/docker.sock:/var/run/docker.sock
     ports:
       - 8080:8000
     depends_on:
