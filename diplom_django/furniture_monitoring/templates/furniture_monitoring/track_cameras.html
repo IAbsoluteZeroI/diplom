@@ -1,0 +1,20 @@
+{% extends 'furniture_monitoring/base.html' %}
+
+{% block title %}
+  Отслеживание по двум камерам
+{% endblock title %}
+
+{% block content %}
+  <h1>Отслеживание по двум камерам</h1>
+  <form method="post">
+    {% csrf_token %}
+    {% for line_counter in line_counters %}
+      <div>
+        <input type="checkbox" name="selected_counters[]" value="{{ line_counter.id }}">
+        <label>Camera {{ line_counter.camera.id }} in Place {{ line_counter.camera.place.id }} (start_x: {{ line_counter.start_x }}, start_y: {{ line_counter.start_y }}, end_x: {{ line_counter.end_x}}, end_y: {{ line_counter.end_y }})</label>
+      </div>
+    {% endfor %}
+    <button type="submit" name="action" value="start_tracking">Начать трекинг</button>
+    <button type="submit" name="action" value="stop_tracking">Остановить</button>
+  </form>
+{% endblock content %}

@@ -5,7 +5,7 @@
 {% endblock title %}
 
 {% block content %}
-  <h1>Стартовая страница</h1>
-  <p>Hello world</p>
-  <a href="{% url 'db_tables' %}">Database Tables</a>
+  <h1>Мониторинг перемещения мебели</h1>
+  <p><a href="{% url 'track_cameras' %}">Отслеживание перемещения мебели</a></p>
+  <p><a href="{% url 'db_tables' %}">Database Tables</a></p>
 {% endblock content %}

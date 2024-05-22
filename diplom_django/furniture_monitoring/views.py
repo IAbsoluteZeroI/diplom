@@ -2,7 +2,10 @@ import subprocess
 
 from django.db import connection
 from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, reverse
+from .models import Camera, LineCounter
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect
 
 
 # Create your views here.
@@ -35,3 +38,34 @@ def table_view(request, table_name):
         "rows": rows,
     }
     return render(request, "furniture_monitoring/table.html", context)
+
+
+@csrf_protect
+def track_cameras_view(request):
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "start_tracking":
+            # Get the selected line counters
+            selected_counters = request.POST.getlist("selected_counters[]")
+            selected_line_counters = LineCounter.objects.filter(
+                id__in=selected_counters
+            )
+            print(selected_line_counters)
+            # Call your function to start tracking with the selected line counters
+            # redirect to the same page after processing
+            return redirect(reverse("track_cameras"))
+        elif action == "stop_tracking":
+            selected_counters = request.POST.getlist("selected_counters[]")
+            selected_line_counters = LineCounter.objects.filter(
+                id__in=selected_counters
+            )
+            # Call your function to stop tracking here
+            # redirect to the same page after processing
+            return redirect(reverse("track_cameras"))
+        else:
+            # Handle invalid action if needed
+            pass
+    else:
+        context = {}
+        context["line_counters"] = LineCounter.objects.all().order_by("id")[:2]
+        return render(request, "furniture_monitoring/track_cameras.html", context)
