@@ -131,9 +131,17 @@ def track_cameras_view(request):
                 threads.append(thread)
 
             # TODO: Сейчас страница обновляется через 3 секунды после запуска контейнеров,
-            # а после завершения их работы нет.
+            # а после завершения их работы нет. Желательно обновить страницу и через 3 сек,
+            # и после завершения контейнеров. Надо как то обновить страницу, не потеряв
+            # threads, или обработать завершение контейнеров по-другому.
+
+            # Обновить страницу через 3 сек
             time.sleep(3)
             return redirect(reverse("track_cameras"))
+            # Дождаться выполнения всех контейнеров и обновить страницу
+            # for thread in threads:
+            #     tread.join()
+            # return redirect(reverse("track_cameras"))
 
         elif action == "stop_tracking":
             selected_counters = request.POST.getlist("selected_counters[]")
