@@ -130,6 +130,8 @@ def track_cameras_view(request):
                 thread.start()
                 threads.append(thread)
 
+            # TODO: Сейчас страница обновляется через 3 секунды после запуска контейнеров,
+            # а после завершения их работы нет.
             time.sleep(3)
             return redirect(reverse("track_cameras"))
 
