@@ -10,20 +10,23 @@ from django.views.decorators.http import require_POST
 
 client = docker.from_env()
 
+import uuid
+
 from .models import Camera, LineCounter
 
 
 def get_next_worker_name():
-    existing_containers = client.containers.list(all=True)
-    existing_names = [container.name for container in existing_containers]
-
-    # Начинаем счет с worker_1
-    i = 1
-    while True:
-        candidate_name = f"worker_{i}"
-        if candidate_name not in existing_names:
-            return candidate_name
-        i += 1
+    return f"worker_{uuid.uuid4()}"
+    # existing_containers = client.containers.list(all=True)
+    # existing_names = [container.name for container in existing_containers]
+    #
+    # # Начинаем счет с worker_1
+    # i = 1
+    # while True:
+    #     candidate_name = f"worker_{i}"
+    #     if candidate_name not in existing_names:
+    #         return candidate_name
+    #     i += 1
 
 
 def start_worker(filepath, cam_id, x1, y1, x2, y2):
@@ -104,6 +107,7 @@ def track_cameras_view(request):
             print(selected_line_counters)
 
             # Создание и запуск потока с правильной передачей аргументов
+            threads = []
             for line_counter in selected_line_counters:
                 line_counter: LineCounter
                 camera: Camera = line_counter.camera
@@ -119,6 +123,9 @@ def track_cameras_view(request):
                     ),
                 )
                 thread.start()
+                threads.append(thread)
+            for thread in threads:
+                thread.join()
 
             # redirect to the same page after processing
             return redirect(reverse("track_cameras"))
