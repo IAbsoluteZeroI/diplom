@@ -6,6 +6,7 @@
 
 {% block content %}
   <h1>Database Tables</h1>
+  <p><a href="{% url 'index' %}">На главную</a></p>
   <ul>
     {% for table_name in table_names %}
       <li><a href="{% url 'table' table_name %}">{{ table_name }}</a></li>

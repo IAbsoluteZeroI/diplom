@@ -6,15 +6,28 @@
 
 {% block content %}
   <h1>Отслеживание по двум камерам</h1>
+  <p><a href="{% url 'index' %}">На главную</a></p>
   <form method="post">
     {% csrf_token %}
     {% for line_counter in line_counters %}
       <div>
         <input type="checkbox" name="selected_counters[]" value="{{ line_counter.id }}">
-        <label>Camera {{ line_counter.camera.id }} in Place {{ line_counter.camera.place.id }} (start_x: {{ line_counter.start_x }}, start_y: {{ line_counter.start_y }}, end_x: {{ line_counter.end_x}}, end_y: {{ line_counter.end_y }})</label>
+        {% if line_counter.camera.id in worker_numbers %}
+          <label>[Working...] Camera {{ line_counter.camera.id }} in Place {{ line_counter.camera.place.id }} (start_x: {{ line_counter.start_x }}, start_y: {{ line_counter.start_y }}, end_x: {{ line_counter.end_x}}, end_y: {{ line_counter.end_y }})</label>
+        {% else %}
+          <label>Camera {{ line_counter.camera.id }} in Place {{ line_counter.camera.place.id }} (start_x: {{ line_counter.start_x }}, start_y: {{ line_counter.start_y }}, end_x: {{ line_counter.end_x}}, end_y: {{ line_counter.end_y }})</label>
+        {% endif %}
       </div>
     {% endfor %}
     <button type="submit" name="action" value="start_tracking">Начать трекинг</button>
     <button type="submit" name="action" value="stop_tracking">Остановить</button>
   </form>
 {% endblock content %}
+
+{% block js_additional %}
+  <script type="text/javascript">
+    setTimeout(function() {
+      window.location.reload();
+    }, 3000);
+  </script>
+{% endblock js_additional %}

@@ -1,6 +1,8 @@
 import subprocess
 import threading
 
+import time
+import re
 import docker
 from django.db import connection
 from django.http import HttpResponse
@@ -13,20 +15,6 @@ client = docker.from_env()
 import uuid
 
 from .models import Camera, LineCounter
-
-
-def get_next_worker_name():
-    return f"worker_{uuid.uuid4()}"
-    # existing_containers = client.containers.list(all=True)
-    # existing_names = [container.name for container in existing_containers]
-    #
-    # # Начинаем счет с worker_1
-    # i = 1
-    # while True:
-    #     candidate_name = f"worker_{i}"
-    #     if candidate_name not in existing_names:
-    #         return candidate_name
-    #     i += 1
 
 
 def start_worker(filepath, cam_id, x1, y1, x2, y2):
@@ -47,7 +35,8 @@ def start_worker(filepath, cam_id, x1, y1, x2, y2):
             str(y2),
         ],
         remove=True,
-        name=get_next_worker_name(),
+        # name=get_next_worker_name(),
+        name=f"worker_{cam_id}",
         network="diplom_default",
         device_requests=[docker.types.DeviceRequest(count=-1, capabilities=[["gpu"]])],
     )
@@ -94,19 +83,35 @@ def table_view(request, table_name):
     return render(request, "furniture_monitoring/table.html", context)
 
 
+def get_worker_container_numbers():
+    # Получение всех контейнеров
+    containers = client.containers.list()
+
+    # Регулярное выражение для соответствия именам контейнеров worker_n
+    pattern = re.compile(r"worker_(\d+)")
+
+    # Извлечение номеров n из имен контейнеров
+    worker_numbers = []
+    for container in containers:
+        match = pattern.search(container.name)
+        if match:
+            worker_numbers.append(int(match.group(1)))
+
+    # Сортировка номеров для упорядоченного отображения
+    worker_numbers.sort()
+    return worker_numbers
+
+
 @csrf_protect
 def track_cameras_view(request):
     if request.method == "POST":
         action = request.POST.get("action")
         if action == "start_tracking":
-            # Get the selected line counters
             selected_counters = request.POST.getlist("selected_counters[]")
             selected_line_counters = LineCounter.objects.filter(
                 id__in=selected_counters
             )
-            print(selected_line_counters)
 
-            # Создание и запуск потока с правильной передачей аргументов
             threads = []
             for line_counter in selected_line_counters:
                 line_counter: LineCounter
@@ -124,24 +129,25 @@ def track_cameras_view(request):
                 )
                 thread.start()
                 threads.append(thread)
-            for thread in threads:
-                thread.join()
 
-            # redirect to the same page after processing
+            time.sleep(3)
             return redirect(reverse("track_cameras"))
+
         elif action == "stop_tracking":
             selected_counters = request.POST.getlist("selected_counters[]")
             selected_line_counters = LineCounter.objects.filter(
                 id__in=selected_counters
             )
-            # Пример остановки контейнера (имя контейнера должно быть известно)
-
-            stop_worker("worker_1")
+            for line_counter in selected_line_counters:
+                camera: Camera = line_counter.camera
+                stop_worker(f"worker_{camera.id}")
 
             return redirect(reverse("track_cameras"))
         else:
             pass
     else:
         context = {}
-        context["line_counters"] = LineCounter.objects.all().order_by("id")[:2]
+        context["line_counters"] = LineCounter.objects.all().order_by("id")
+        context["worker_numbers"] = get_worker_container_numbers()
+
         return render(request, "furniture_monitoring/track_cameras.html", context)
