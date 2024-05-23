@@ -1,11 +1,20 @@
 import os
 import django
+import time
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "diplom_django.settings")
 django.setup()
 
 from django.contrib.auth.models import User
 from django.core.management import call_command
+
+
+def clear_migrations(path):
+    for filename in os.listdir(path):
+        file_path = os.path.join(path, filename)
+        if os.path.isfile(file_path) and filename != '__init__.py':
+            os.remove(file_path)
+
 
 
 def create_superuser_if_not_exists():
@@ -21,6 +30,9 @@ def create_superuser_if_not_exists():
 
 
 if __name__ == "__main__":
+    clear_migrations(os.path.abspath("./furniture_monitoring/migrations"))
+    time.sleep(5)
+    call_command("makemigrations")
     call_command("migrate")
     create_superuser_if_not_exists()
     call_command("runserver", "0.0.0.0:8000")

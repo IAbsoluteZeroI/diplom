@@ -13,9 +13,9 @@
       <div>
         <input type="checkbox" name="selected_counters[]" value="{{ line_counter.id }}">
         {% if line_counter.camera.id in worker_numbers %}
-          <label>[Working...] Camera {{ line_counter.camera.id }} in Place {{ line_counter.camera.place.id }} (start_x: {{ line_counter.start_x }}, start_y: {{ line_counter.start_y }}, end_x: {{ line_counter.end_x}}, end_y: {{ line_counter.end_y }})</label>
+          <label>[Working...] {{ line_counter.camera.place.name }}</label>
         {% else %}
-          <label>Camera {{ line_counter.camera.id }} in Place {{ line_counter.camera.place.id }} (start_x: {{ line_counter.start_x }}, start_y: {{ line_counter.start_y }}, end_x: {{ line_counter.end_x}}, end_y: {{ line_counter.end_y }})</label>
+          <label>{{ line_counter.camera.place.name }}</label>
         {% endif %}
       </div>
     {% endfor %}

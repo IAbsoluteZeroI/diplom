@@ -19,69 +19,53 @@ class LineCounter(models.Model):
     start_y = models.FloatField(default=0)
     end_x = models.FloatField(default=0)
     end_y = models.FloatField(default=0)
-    related_line_counter = models.ForeignKey(
-        "LineCounter",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="related_line_counters",
-    )
 
     def __str__(self):
-        return f"LineCounter {self.id} for Camera {self.camera.id}"
+        return f"LineCounter {self.id} for Camera {self.camera.place.name}"
 
 
 class Camera(models.Model):
     id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100)
     place = models.ForeignKey("Place", on_delete=models.CASCADE, related_name="cameras")
+    floor = models.CharField(max_length=3)
+    wing = models.CharField(max_length=6)
     video_path = models.CharField(max_length=255, blank=True, null=True, default="")
 
     def __str__(self):
-        return f"Camera {self.id} in Place {self.place.id}"
+        return f"Camera {self.id} in {self.place.name}"
 
 
 class Place(models.Model):
     id = models.AutoField(primary_key=True)
-    place_objects = models.ForeignKey(
-        "ObjectsInPlace", on_delete=models.CASCADE, related_name="places"
-    )
-
+    name = models.CharField(max_length=100)
+    description = models.CharField(max_length=255, blank=True, null=True, default="")
+    
     def __str__(self):
-        return f"Place {self.id}"
+        return self.name
 
 
 class ObjectsInPlace(models.Model):
     id = models.AutoField(primary_key=True)
-    chair = models.IntegerField()
-    person = models.IntegerField()
-    interactive_whiteboard = models.IntegerField()
-    keyboard = models.IntegerField()
-    monitor = models.IntegerField()
-    pc = models.IntegerField()
-    table = models.IntegerField()
-
+    object = models.ForeignKey(
+        "Object", on_delete=models.CASCADE, related_name="object"
+    )
+    place = models.ForeignKey(
+        "Place", on_delete=models.CASCADE, related_name="place"
+    )
+    quantity = models.IntegerField(default=0)
+    
     def __str__(self):
-        return f"ObjectsInPlace {self.id}"
+        return f"ObjectsInPlace {self.place.name}"
 
 
 class EventHistory(models.Model):
     id = models.AutoField(primary_key=True)
-    LINE_COUNTER_TYPES = (
-        ("in", "in"),
-        ("out", "out"),
-    )
-    type = models.CharField(max_length=3, choices=LINE_COUNTER_TYPES)
-    date = models.DateTimeField()
-    object = models.ForeignKey(
-        Object, on_delete=models.CASCADE, related_name="event_objects"
-    )
-    line_counter = models.ForeignKey(
-        LineCounter,
-        on_delete=models.CASCADE,
-        related_name="event_histories",
-        null=True,
-        blank=True,
-    )
-
+    type = models.CharField(max_length=3)
+    frame = models.IntegerField(default=0)
+    object = models.CharField(max_length=100)
+    from_place = models.CharField(max_length=100)
+    to_place = models.CharField(max_length=100)
+    
     def __str__(self):
-        return f"Event {self.id} at {self.date}"
+        return f"Event {self.id} at {self.frame} frame"

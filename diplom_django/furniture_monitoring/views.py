@@ -136,7 +136,7 @@ def track_cameras_view(request):
             # threads, или обработать завершение контейнеров по-другому.
 
             # Обновить страницу через 5 сек
-            time.sleep(5)
+            #time.sleep(5)
             return redirect(reverse("track_cameras"))
             # Дождаться выполнения всех контейнеров и обновить страницу
             # for thread in threads:
