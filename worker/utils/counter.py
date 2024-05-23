@@ -12,6 +12,7 @@ class EventInfo(BaseModel):
     camera_id: int
     class_name: str
     event_type: str
+    frame_num: int
 
 
 class CustomLineCounter:
@@ -43,7 +44,7 @@ class CustomLineCounter:
         # decoded_result = result.decode("utf-8") if result else None
         # print(f"Значение для ключа '{key}' установлено: {decoded_result}")
 
-    async def update(self, detections: Detections):
+    async def update(self, detections: Detections, frame_num: int):
         tasks = []
         for id in detections.class_id:
             mask = np.array(
@@ -90,6 +91,7 @@ class CustomLineCounter:
                                 camera_id=self.camera_id,
                                 class_name=self.class_name_dict[class_id],
                                 event_type="IN",
+                                frame_num=frame_num,
                             ).json(),
                         )
                     )
@@ -103,6 +105,7 @@ class CustomLineCounter:
                                 camera_id=self.camera_id,
                                 class_name=self.class_name_dict[class_id],
                                 event_type="OUT",
+                                frame_num=frame_num,
                             ).json(),
                         )
                     )

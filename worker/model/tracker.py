@@ -68,10 +68,8 @@ async def track_video(video_path, start, end, camera_id) -> None:
         class_name_dict=CLASS_NAMES_DICT,
         video_info=video_info,
     )
-    
-    
-    
-    for frame in tqdm(generator, total=video_info.total_frames):
+
+    for frame_num, frame in enumerate(tqdm(generator, total=video_info.total_frames)):
         # model prediction on single frame and conversion to supervision Detections
         results = model(frame, verbose=False)
         detections = Detections(
@@ -91,9 +89,7 @@ async def track_video(video_path, start, end, camera_id) -> None:
             img_size=frame.shape,
         )
 
-        tracker_id = match_detections_with_tracks(
-            detections=detections, tracks=tracks
-        )
+        tracker_id = match_detections_with_tracks(detections=detections, tracks=tracks)
 
         detections.tracker_id = np.array(tracker_id)
 
@@ -102,12 +98,9 @@ async def track_video(video_path, start, end, camera_id) -> None:
             dtype=bool,
         )
         detections.filter(mask=mask, inplace=True)
-        
-        await line_counter.update(detections=detections)
-    
-    
-    
-    
+
+        await line_counter.update(detections=detections, frame_num=frame_num)
+
     # with VideoSink("result.mp4", video_info) as sink:
     #     # loop over video frames
     #     for frame in tqdm(generator, total=video_info.total_frames):
