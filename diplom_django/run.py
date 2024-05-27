@@ -16,7 +16,6 @@ def clear_migrations(path):
             os.remove(file_path)
 
 
-
 def create_superuser_if_not_exists():
     username = os.environ.get("DJANGO_SUPERUSER_USERNAME")
     email = os.environ.get("DJANGO_SUPERUSER_EMAIL")
@@ -31,8 +30,9 @@ def create_superuser_if_not_exists():
 
 if __name__ == "__main__":
     clear_migrations(os.path.abspath("./furniture_monitoring/migrations"))
-    time.sleep(5)
+    time.sleep(2)
     call_command("makemigrations")
     call_command("migrate")
+    call_command("db_filling")
     create_superuser_if_not_exists()
     call_command("runserver", "0.0.0.0:8000")

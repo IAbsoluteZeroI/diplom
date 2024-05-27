@@ -4,7 +4,7 @@ from django.db import models
 
 class Object(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=10)
 
     def __str__(self):
         return self.name
@@ -27,8 +27,8 @@ class LineCounter(models.Model):
 class Camera(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
-    place = models.ForeignKey("Place", on_delete=models.CASCADE, related_name="cameras")
-    floor = models.CharField(max_length=3)
+    place = models.ForeignKey("Place", on_delete=models.CASCADE, related_name="cameras", blank=True, null=True, default="")
+    floor = models.CharField(max_length=5)
     wing = models.CharField(max_length=6)
     video_path = models.CharField(max_length=255, blank=True, null=True, default="")
 
