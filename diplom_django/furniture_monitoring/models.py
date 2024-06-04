@@ -33,7 +33,7 @@ class Camera(models.Model):
     video_path = models.CharField(max_length=255, blank=True, null=True, default="")
 
     def __str__(self):
-        return f"Camera {self.id} in {self.place.name}"
+        return f"{self.name}"
 
 
 class Place(models.Model):

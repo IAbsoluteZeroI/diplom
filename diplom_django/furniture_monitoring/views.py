@@ -1,20 +1,43 @@
-import subprocess
 import threading
-
-import time
 import re
 import docker
 from django.db import connection
-from django.http import HttpResponse
 from django.shortcuts import redirect, render, reverse
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
+from .models import Camera, LineCounter
 
 client = docker.from_env()
 
-import uuid
+def collect_floors():
+    cameras = Camera.objects.all()
+    unique_floors = set()
+    for camera in cameras:
+        floors = re.split(r'[-,\s]', camera.floor)
+        for floor in floors:
+            if floor != '5':
+                unique_floors.add(floor.strip())
+    return unique_floors
 
-from .models import Camera, LineCounter
+def index(request):
+    # Получение всех уникальных значений этажей из базы данных
+    context = {
+        'floors': sorted(collect_floors()),
+    }
+    return render(request, "furniture_monitoring/index.html", context)
+
+def floor_detail(request, floor):
+    # Получение камер для выбранного этажа, включая многоуровневые этажи
+    cameras_on_floor = Camera.objects.filter(
+        floor__iregex=rf'(^|[-,\s]){floor}([-,\s]|$)'
+    )
+    
+    context = {
+        'floor': floor,
+        'cameras_on_floor': cameras_on_floor,
+        'floors': sorted(collect_floors()),
+    }
+    return render(request, 'furniture_monitoring/floor_detail.html', context)
 
 
 def start_worker(filepath, cam_id, x1, y1, x2, y2):
@@ -51,22 +74,19 @@ def stop_worker(worker_name):
         print(f"Container {worker_name} not found.")
 
 
-# Create your views here.
-def index(request):
-    context = {}
-    return render(request, "furniture_monitoring/index.html", context)
-
-
 def db_tables_view(request):
     with connection.cursor() as cursor:
         cursor.execute(
             "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
         )
         table_names = [row[0] for row in cursor.fetchall()]
-
-    return render(
-        request, "furniture_monitoring/db_tables.html", {"table_names": table_names}
-    )
+    
+    context = {
+        "table_names": table_names,
+        'floors': sorted(collect_floors()),
+    }
+    
+    return render(request, "furniture_monitoring/db_tables.html", context)
 
 
 def table_view(request, table_name):
@@ -79,6 +99,7 @@ def table_view(request, table_name):
         "table_name": table_name,
         "column_names": column_names,
         "rows": rows,
+        'floors': sorted(collect_floors()),
     }
     return render(request, "furniture_monitoring/table.html", context)
 
@@ -156,7 +177,9 @@ def track_cameras_view(request):
         else:
             pass
     else:
-        context = {}
+        context = {
+            'floors': sorted(collect_floors()),
+        }
         context["line_counters"] = LineCounter.objects.all().order_by("id")
         context["worker_numbers"] = get_worker_container_numbers()
 

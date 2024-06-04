@@ -1,0 +1,16 @@
+{% extends 'furniture_monitoring/base.html' %}
+
+{% block title %}
+    Информация о {{ floor }} этаже
+{% endblock title %}
+
+{% block content %}
+    <div class="main-content">
+        <h1>Камеры на {{ floor }} этаже</h1>
+        <ul>
+            {% for camera in cameras_on_floor %}
+                <li>{{ camera.name }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock content %}

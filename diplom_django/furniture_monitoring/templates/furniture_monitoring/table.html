@@ -5,24 +5,26 @@
 {% endblock %}
 
 {% block content %}
-  <h1>{{ table_name }}</h1>
-  <table>
-    <thead>
-      <tr>
-        {% for column_name in column_names %}
-          <th>{{ column_name }}</th>
-        {% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for row in rows %}
+  <div class="main-content">
+    <h1>{{ table_name }}</h1>
+    <table>
+      <thead>
         <tr>
-          {% for cell in row %}
-            <td>{{ cell }}</td>
+          {% for column_name in column_names %}
+            <th>{{ column_name }}</th>
           {% endfor %}
         </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            {% for cell in row %}
+              <td>{{ cell }}</td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endblock %}
 
