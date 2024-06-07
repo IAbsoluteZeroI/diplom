@@ -1,0 +1,41 @@
+.dropdown-btn {
+    background-color: #3498db;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    width: 400px;
+    text-align: left;
+}
+
+.dropdown-btn:after {
+    content: '\25BC';
+    float: right;
+}
+
+.dropdown-content {
+    display: none;
+    background-color: #f9f9f9;
+    width: 400px;
+
+    z-index: 1;
+}
+
+.dropdown-content ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dropdown-content li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.dropdown-content li:last-child {
+    border-bottom: none;
+}
+
+.show {
+    display: block;
+}

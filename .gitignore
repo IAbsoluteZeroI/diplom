@@ -6,4 +6,4 @@ diplom_django/furniture_monitoring/migrations/__pycache__/
 *.py[cod]
 *$py.class
 __pycache__/
-worker/result.mp4
+*.mp4

@@ -9,6 +9,8 @@ services:
         failure_action: rollback
     labels:
       - "auto_remove=true"
+    volumes:
+      - media:/app/media
   
   web:
     build: diplom_django
@@ -22,6 +24,7 @@ services:
     volumes:
       - ./diplom_django:/app 
       - //var/run/docker.sock:/var/run/docker.sock
+      - media:/app/furniture_monitoring/media
     ports:
       - 8080:8000
     depends_on:
@@ -57,3 +60,9 @@ services:
 
 volumes:
   postgres_data:
+  media:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./diplom_django/furniture_monitoring/media

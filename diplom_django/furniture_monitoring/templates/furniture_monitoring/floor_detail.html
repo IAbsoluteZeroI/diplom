@@ -1,16 +1,33 @@
 {% extends 'furniture_monitoring/base.html' %}
-
+{% load static %}
 {% block title %}
     Информация о {{ floor }} этаже
 {% endblock title %}
 
 {% block content %}
     <div class="main-content">
-        <h1>Камеры на {{ floor }} этаже</h1>
+        <h1>Помещения на {{ floor }} этаже</h1>
         <ul>
-            {% for camera in cameras_on_floor %}
-                <li>{{ camera.name }}</li>
+            {% for place, cameras in places_and_cameras.items %}
+                <li>
+                    <button class="dropdown-btn">{{ place.name }}</button>
+                    <div class="dropdown-content">
+                        <ul>
+                            {% for camera in cameras %}
+                                <li>{{ camera.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </li>
             {% endfor %}
         </ul>
     </div>
 {% endblock content %}
+
+{% block css_additional %}
+<link rel="stylesheet" href="{% static 'furniture_monitoring/css/dropdown.css' %}">
+{% endblock css_additional %}
+
+{% block js_additional %}
+<script src="{% static 'furniture_monitoring/js/dropdown.js' %}"></script>
+{% endblock js_additional %}

@@ -1,8 +1,6 @@
-import sys
-import time
+import sys, os, cv2
+from datetime import datetime
 from typing import List
-
-import cv2
 import numpy as np
 from onemetric.cv.utils.iou import box_iou_batch
 from supervision.draw.color import ColorPalette
@@ -46,6 +44,13 @@ def match_detections_with_tracks(
 
     return tracker_ids
 
+def create_folder(folder_name):
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+        print(f"Папка '{folder_name}' успешно создана")
+    else:
+        print(f"Папка '{folder_name}' уже существует")
+
 
 async def track_video(video_path, start, end, camera_id) -> None:
     byte_tracker = BYTETracker(BYTETrackerArgs())
@@ -68,38 +73,55 @@ async def track_video(video_path, start, end, camera_id) -> None:
         class_name_dict=CLASS_NAMES_DICT,
         video_info=video_info,
     )
+    
+    create_folder(f"/app/media/{camera_id}")
+    
+    with VideoSink(f"/app/media/{camera_id}/{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}_result.mp4", video_info) as sink:
+        for frame_num, frame in enumerate(tqdm(generator, total=video_info.total_frames)):
+            # model prediction on single frame and conversion to supervision Detections
+            results = model(frame,
+                            # verbose=False
+                            )
+            detections = Detections(
+                xyxy=results[0].boxes.xyxy.cpu().numpy(),
+                confidence=results[0].boxes.conf.cpu().numpy(),
+                class_id=results[0].boxes.cls.cpu().numpy().astype(int),
+            )
 
-    for frame_num, frame in enumerate(tqdm(generator, total=video_info.total_frames)):
-        # model prediction on single frame and conversion to supervision Detections
-        results = model(frame, verbose=False)
-        detections = Detections(
-            xyxy=results[0].boxes.xyxy.cpu().numpy(),
-            confidence=results[0].boxes.conf.cpu().numpy(),
-            class_id=results[0].boxes.cls.cpu().numpy().astype(int),
-        )
+            mask = np.array(
+                [class_id in CLASS_ID for class_id in detections.class_id], dtype=bool
+            )
+            detections.filter(mask=mask, inplace=True)
 
-        mask = np.array(
-            [class_id in CLASS_ID for class_id in detections.class_id], dtype=bool
-        )
-        detections.filter(mask=mask, inplace=True)
+            tracks = byte_tracker.update(
+                output_results=detections2boxes(detections=detections),
+                img_info=frame.shape,
+                img_size=frame.shape,
+            )
 
-        tracks = byte_tracker.update(
-            output_results=detections2boxes(detections=detections),
-            img_info=frame.shape,
-            img_size=frame.shape,
-        )
+            tracker_id = match_detections_with_tracks(detections=detections, tracks=tracks)
 
-        tracker_id = match_detections_with_tracks(detections=detections, tracks=tracks)
+            detections.tracker_id = np.array(tracker_id)
 
-        detections.tracker_id = np.array(tracker_id)
+            mask = np.array(
+                [tracker_id is not None for tracker_id in detections.tracker_id],
+                dtype=bool,
+            )
+            detections.filter(mask=mask, inplace=True)
+            
+            labels = [
+                f"id{tracker_id} {CLASS_NAMES_DICT[class_id]} {confidence:0.2f}"
+                for _, confidence, class_id, tracker_id in detections
+            ]
+            
+            frame = box_annotator.annotate(
+                frame=frame, detections=detections, labels=labels
+            )
 
-        mask = np.array(
-            [tracker_id is not None for tracker_id in detections.tracker_id],
-            dtype=bool,
-        )
-        detections.filter(mask=mask, inplace=True)
+            await line_counter.update(detections=detections, frame_num=frame_num)
+            line_annotator.annotate(frame=frame, line_counter=line_counter)
+            sink.write_frame(frame)
 
-        await line_counter.update(detections=detections, frame_num=frame_num)
 
     # with VideoSink("result.mp4", video_info) as sink:
     #     # loop over video frames

@@ -31,10 +31,7 @@ class CustomLineCounter:
         self.camera_id = camera_id
         self.class_name_dict = class_name_dict
         self.redis = aioredis.from_url("redis://redis")
-        self.result_dict = {
-            int(class_id): {"in": [], "out": []} for class_id in classes
-        }
-
+        
     async def send_to_redis(self, key, value):
         # Ensure key and value are of the correct type
         key = str(key)

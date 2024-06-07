@@ -27,10 +27,10 @@ class LineCounter(models.Model):
 class Camera(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
-    place = models.ForeignKey("Place", on_delete=models.CASCADE, related_name="cameras", blank=True, null=True, default="")
+    place = models.ForeignKey("Place", on_delete=models.CASCADE, related_name="cameras")
     floor = models.CharField(max_length=5)
     wing = models.CharField(max_length=6)
-    video_path = models.CharField(max_length=255, blank=True, null=True, default="")
+    video_path = models.CharField(max_length=255, blank=True,default="")
 
     def __str__(self):
         return f"{self.name}"
