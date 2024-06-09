@@ -1,10 +1,10 @@
 .dropdown-btn {
-    background-color: #3498db;
+    background-color: #0087c0;
     color: white;
     padding: 10px;
     border: none;
     cursor: pointer;
-    width: 400px;
+    width: 250px;
     text-align: left;
 }
 
@@ -15,9 +15,9 @@
 
 .dropdown-content {
     display: none;
-    background-color: #f9f9f9;
-    width: 400px;
-
+    color: rgb(32, 30, 30);
+    background-color: #c7c2c2;
+    width: 250px;
     z-index: 1;
 }
 

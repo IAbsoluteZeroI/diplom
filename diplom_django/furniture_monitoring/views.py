@@ -19,11 +19,6 @@ def collect_floors():
                 unique_floors.add(floor.strip())
     return unique_floors
 
-def index(request):
-    context = {
-        'floors': sorted(collect_floors()),
-    }
-    return render(request, "furniture_monitoring/index.html", context)
 
 def floor_detail(request, floor):
     cameras_on_floor = Camera.objects.filter(
@@ -102,7 +97,7 @@ def get_worker_container_numbers():
 
 
 @csrf_protect
-def track_cameras_view(request):
+def index(request):
     if request.method == "POST":
         action = request.POST.get("action")
         if action == "start_tracking":
@@ -129,7 +124,7 @@ def track_cameras_view(request):
                 thread.start()
                 threads.append(thread)
 
-            return redirect(reverse("track_cameras"))
+            return redirect(reverse("index"))
 
         elif action == "stop_tracking":
             selected_counters = request.POST.getlist("selected_counters[]")
@@ -140,7 +135,7 @@ def track_cameras_view(request):
                 camera: Camera = line_counter.camera
                 stop_worker(f"worker_{camera.id}")
 
-            return redirect(reverse("track_cameras"))
+            return redirect(reverse("index"))
         else:
             pass
     else:
@@ -150,4 +145,4 @@ def track_cameras_view(request):
         context["line_counters"] = LineCounter.objects.all().order_by("id")
         context["worker_numbers"] = get_worker_container_numbers()
 
-        return render(request, "furniture_monitoring/track_cameras.html", context)
+        return render(request, "furniture_monitoring/index.html", context)

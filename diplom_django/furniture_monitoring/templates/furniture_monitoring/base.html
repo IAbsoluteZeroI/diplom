@@ -16,6 +16,8 @@
     <body>
         <div class="sidebar">
             <ul>
+                <li><a href="{% url 'index'%}">Home</a></li>
+                <hr size="2" color="#0087c0" >
                 {% for floor in floors %}
                     {% if floor.isdigit %}
                         <li><a href="{% url 'floor_detail' floor=floor %}">{{ floor }} этаж</a></li>

@@ -3,15 +3,7 @@ version: '3'
 services:
   worker:
     build: worker
-    stop_grace_period: 5s
-    deploy:
-      update_config:
-        failure_action: rollback
-    labels:
-      - "auto_remove=true"
-    volumes:
-      - media:/app/media
-  
+ 
   web:
     build: diplom_django
     environment:

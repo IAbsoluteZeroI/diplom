@@ -1,16 +1,7 @@
 import argparse
 import asyncio
-
 from model.tracker import track_video
 from supervision.geometry.dataclasses import Point
-
-# start = Point(x=1200, y=750)
-# end = Point(x=1100, y=230)
-# track_video('kab24.avi', start, end)
-
-# python3 main.py --file-path kab24.avi --camera-id 1 --start-xy 1200 750 --end-xy 1100 230
-# python3 main.py --file-path lift.avi --camera-id 2 --start-xy 927 750 --end-xy 1100 227
-
 
 async def main(file_path, camera_id, start, end):
     await track_video(file_path, start, end, camera_id)

@@ -1,12 +1,26 @@
 {% extends 'furniture_monitoring/base.html' %}
 
 {% block title %}
-    Стартовая страница
+  Отслеживание по двум камерам
 {% endblock title %}
 
 {% block content %}
-    <div class="main-content">
-        <h1>Мониторинг перемещения мебели</h1>
-        <p><a href="{% url 'track_cameras' %}">Отслеживание перемещения мебели</a></p>
-    </div>
+  <div class="main-content">
+    <h1>Отслеживание мебели по камерам</h1>
+    <form method="post">
+      {% csrf_token %}
+      {% for line_counter in line_counters %}
+        <div>
+          <input type="checkbox" name="selected_counters[]" value="{{ line_counter.id }}">
+          {% if line_counter.camera.id in worker_numbers %}
+            <label>[Working...] {{ line_counter.camera.place.name }}</label>
+          {% else %}
+            <label>{{ line_counter.camera.place.name }}</label>
+          {% endif %}
+        </div>
+      {% endfor %}
+      <button type="submit" name="action" value="start_tracking">Начать трекинг</button>
+      <button type="submit" name="action" value="stop_tracking">Остановить</button>
+    </form>
+  </div>
 {% endblock content %}
