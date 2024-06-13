@@ -52,7 +52,7 @@ def create_folder(folder_name):
         print(f"Папка '{folder_name}' уже существует")
 
 
-async def track_video(video_path, start, end, camera_id) -> None:
+async def track_video(video_path, start, end, camera_id, line_id) -> None:
     byte_tracker = BYTETracker(BYTETrackerArgs())
     video_info = VideoInfo.from_video_path(video_path)
     generator = get_video_frames_generator(video_path)
@@ -62,6 +62,7 @@ async def track_video(video_path, start, end, camera_id) -> None:
         classes=CLASS_ID,
         camera_id=camera_id,
         class_name_dict=CLASS_NAMES_DICT,
+        line_id=line_id
     )
     box_annotator = BoxAnnotator(
         color=ColorPalette(), thickness=2, text_thickness=2, text_scale=1

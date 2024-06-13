@@ -1,13 +1,50 @@
-import threading
 import re
 import docker
-from django.db import connection
-from django.shortcuts import redirect, render, reverse
+import threading
+from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .serializers import EventHistorySerializer
 from django.views.decorators.csrf import csrf_protect
-from django.views.decorators.http import require_POST
-from .models import Camera, LineCounter, Place
+from django.shortcuts import redirect, render, reverse
+from .models import Camera, LineCounter, Place, EventHistory, CameraGraph, Object
+
+# from pydantic import BaseModel
+
+# class EventInfo(BaseModel):
+#     camera_id: int
+#     class_name: str
+#     event_type: str
+#     frame_num: int
 
 client = docker.from_env()
+
+class CameraGraphView(APIView):
+    def get(self, request, cam_id):
+        camera_id=LineCounter.objects.filter(
+            id__in=LineCounter.objects.filter(camera=cam_id).values_list('line_id', flat=True)
+            ).values_list('camera', flat=True)
+        data = {'camera_id':camera_id.first()}
+        
+        return Response(data, status=status.HTTP_200_OK)
+
+class CreateEvent(APIView):
+    def post(self, request):
+        serializer = EventHistorySerializer(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            print(data)
+            if Object.objects.filter(name=data['object']):
+                event = EventHistory(
+                        frame = data['frame'],
+                        object = data['object'],
+                        from_place = data['from_place'],
+                        to_place = data['to_place']
+                    )
+                event.save()
+            return Response(data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 def collect_floors():
     cameras = Camera.objects.all()
@@ -39,37 +76,27 @@ def floor_detail(request, floor):
     return render(request, 'furniture_monitoring/floor_detail.html', context)
 
 
-def start_worker(filepath, cam_id, x1, y1, x2, y2):
-    client = docker.from_env()
-    
-    volumes = {
-        'diplom_media': {
-            'bind': '/app/media',
-            'mode': 'rw'
-        }
-    }
-
+def start_worker(filepath, cam_id, x1, y1, x2, y2, line_id):
     client.containers.run(
         "diplom-worker",
         [
-            "python3",
-            "main.py",
-            "--file-path",
-            filepath,
-            "--camera-id",
-            str(cam_id),
-            "--start-xy",
-            str(x1),
-            str(y1),
-            "--end-xy",
-            str(x2),
-            str(y2),
+            "python3", "main.py",
+            "--file-path", filepath,
+            "--camera-id", str(cam_id),
+            "--start-xy", str(x1), str(y1),
+            "--end-xy", str(x2), str(y2),
+            "--line-id", str(line_id)
         ],
         remove=True,
         name=f"worker_{cam_id}",
         network="diplom_default",
         device_requests=[docker.types.DeviceRequest(count=-1, capabilities=[["gpu"]])],
-        volumes=volumes
+        volumes = {
+            'diplom_media': {
+                'bind': '/app/media',
+                'mode': 'rw'
+            }
+        }
     )
 
 
@@ -119,6 +146,7 @@ def index(request):
                         int(line_counter.start_y),
                         int(line_counter.end_x),
                         int(line_counter.end_y),
+                        int(line_counter.line_id),
                     ),
                 )
                 thread.start()

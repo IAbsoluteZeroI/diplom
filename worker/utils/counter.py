@@ -13,6 +13,7 @@ class EventInfo(BaseModel):
     class_name: str
     event_type: str
     frame_num: int
+    line_id: int
 
 
 class CustomLineCounter:
@@ -23,12 +24,14 @@ class CustomLineCounter:
         classes: List,
         camera_id: int,
         class_name_dict: dict,
+        line_id: int,
     ):
         self.vector = Vector(start=start, end=end)
         self.tracker_state: Dict[str, bool] = {}
         self.start = start
         self.end = end
         self.camera_id = camera_id
+        self.line_id = line_id
         self.class_name_dict = class_name_dict
         self.redis = aioredis.from_url("redis://redis")
         
@@ -89,7 +92,8 @@ class CustomLineCounter:
                                 class_name=self.class_name_dict[class_id],
                                 event_type="IN",
                                 frame_num=frame_num,
-                            ).json(),
+                                line_id=self.line_id
+                            ).model_dump_json(),
                         )
                     )
                     print(f"{self.camera_id}: {self.class_name_dict[class_id]} -> IN")
@@ -103,7 +107,8 @@ class CustomLineCounter:
                                 class_name=self.class_name_dict[class_id],
                                 event_type="OUT",
                                 frame_num=frame_num,
-                            ).json(),
+                                line_id=self.line_id
+                            ).model_dump_json(),
                         )
                     )
                     print(f"{self.camera_id}: {self.class_name_dict[class_id]} -> OUT")

@@ -2,4 +2,4 @@ psycopg
 asyncio
 aioredis
 pydantic
-
+requests

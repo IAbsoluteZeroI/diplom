@@ -8,3 +8,4 @@ requests==2.31.0
 urllib3<2
 docker
 pandas
+djangorestframework

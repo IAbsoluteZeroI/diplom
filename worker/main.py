@@ -3,8 +3,8 @@ import asyncio
 from model.tracker import track_video
 from supervision.geometry.dataclasses import Point
 
-async def main(file_path, camera_id, start, end):
-    await track_video(file_path, start, end, camera_id)
+async def main(file_path, camera_id, start, end, line_id):
+    await track_video(file_path, start, end, camera_id, line_id)
 
 
 if __name__ == "__main__":
@@ -13,6 +13,7 @@ if __name__ == "__main__":
         "--file-path", type=str, required=True, help="Path to the video file"
     )
     parser.add_argument("--camera-id", type=int, required=True, help="ID of the camera")
+    parser.add_argument("--line-id", type=int, required=True, help="ID of the line")
     parser.add_argument(
         "--start-xy",
         type=str,
@@ -41,4 +42,4 @@ if __name__ == "__main__":
         else Point(x=1100, y=230)
     )
 
-    asyncio.run(main(args.file_path, args.camera_id, start, end))
+    asyncio.run(main(args.file_path, args.camera_id, start, end, args.line_id))

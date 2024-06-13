@@ -1,14 +1,13 @@
 import pandas as pd
 from django.core.management.base import BaseCommand
-from ...models import Camera, Place, LineCounter
+from ...models import Camera, Place, LineCounter, CameraGraph, Object
 
 class Command(BaseCommand):
-    help = 'Imports places and cameras from CSV files'
+    help = 'Imports from CSV files'
 
     def handle(self, *args, **kwargs):
         # Import places
-        try:
-            place_data = pd.read_csv('csv/place.csv')
+        try:place_data = pd.read_csv('csv/place.csv')
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error reading place.csv: {e}'))
             return
@@ -20,11 +19,38 @@ class Command(BaseCommand):
                 description=row.get('description', '')
             )
             place.save()
-            self.stdout.write(self.style.SUCCESS(f'Successfully added place {place.name}'))
+            
+            
+        # Import objects
+        try:object_data = pd.read_csv('csv/object.csv')
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Error reading object.csv: {e}'))
+            return
+
+        for _, row in object_data.iterrows():
+            object = Object(
+                id=row['id'],
+                name=row['name'],
+            )
+            object.save()
+            
+        # Import grapf
+        try:grapf_data = pd.read_csv('csv/graph.csv')
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Error reading grapf.csv: {e}'))
+            return
+
+        for _, row in grapf_data.iterrows():
+            grapf = CameraGraph(
+                id=row['id'],
+                cam_id1 = row['cam_id1'],
+                cam_id2 = row['cam_id2'],
+                weight = row['weight'],
+            )
+            grapf.save()
 
         # Import cameras
-        try:
-            camera_data = pd.read_csv('csv/camera.csv')
+        try:camera_data = pd.read_csv('csv/camera.csv')
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error reading cameras.csv: {e}'))
             return
@@ -42,11 +68,9 @@ class Command(BaseCommand):
                 video_path=row['path']
             )
             camera.save()
-            self.stdout.write(self.style.SUCCESS(f'Successfully added camera {camera.name}'))
             
         # Import linecounter
-        try:
-            camera_data = pd.read_csv('csv/linecounter.csv')
+        try:camera_data = pd.read_csv('csv/linecounter.csv')
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error reading linecounter.csv: {e}'))
             return
@@ -63,6 +87,7 @@ class Command(BaseCommand):
             start_y = row['y1']
             end_x = row['x2']
             end_y = row['y2']
+            line_id = row['line']
 
             # Check if a linecounter with these parameters already exists
             if not LineCounter.objects.filter(camera=camera, start_x=start_x, start_y=start_y, end_x=end_x, end_y=end_y).exists():
@@ -72,9 +97,9 @@ class Command(BaseCommand):
                     start_y=start_y,
                     end_x=end_x,
                     end_y=end_y,
+                    line_id=line_id,
                 )
                 linecounter.save()
-                self.stdout.write(self.style.SUCCESS(f'Successfully added linecounter for camera {camera_id}'))
             else:
                 self.stdout.write(self.style.WARNING(f'Linecounter for camera {camera_id} with these coordinates already exists'))
 

@@ -35,9 +35,9 @@ CLASS_ID_BY_NAME = {v: k for k, v in CLASS_NAMES_DICT.items()}
 
 @dataclass(frozen=True)
 class BYTETrackerArgs:
-    track_thresh: float = 0.30
-    track_buffer: int = 30
-    match_thresh: float = 0.8
+    track_thresh: float = 0.60
+    track_buffer: int = 40
+    match_thresh: float = 0.9
     aspect_ratio_thresh: float = 3.0
     min_box_area: float = 1.0
     mot20: bool = False

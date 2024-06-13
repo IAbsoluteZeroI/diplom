@@ -4,7 +4,7 @@ from django.db import models
 
 class Object(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=10)
+    name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
@@ -15,11 +15,12 @@ class LineCounter(models.Model):
     camera = models.ForeignKey(
         "Camera", on_delete=models.CASCADE, related_name="line_counters"
     )
-    start_x = models.FloatField(default=0)
-    start_y = models.FloatField(default=0)
-    end_x = models.FloatField(default=0)
-    end_y = models.FloatField(default=0)
-
+    start_x = models.IntegerField(default=0)
+    start_y = models.IntegerField(default=0)
+    end_x = models.IntegerField(default=0)
+    end_y = models.IntegerField(default=0)
+    line_id = models.IntegerField(blank=True)
+    
     def __str__(self):
         return f"LineCounter {self.id} for Camera {self.camera.place.name}"
 
@@ -61,7 +62,6 @@ class ObjectsInPlace(models.Model):
 
 class EventHistory(models.Model):
     id = models.AutoField(primary_key=True)
-    type = models.CharField(max_length=3)
     frame = models.IntegerField(default=0)
     object = models.CharField(max_length=100)
     from_place = models.CharField(max_length=100)
@@ -69,3 +69,12 @@ class EventHistory(models.Model):
     
     def __str__(self):
         return f"Event {self.id} at {self.frame} frame"
+    
+class CameraGraph(models.Model):
+    id = models.AutoField(primary_key=True)
+    cam_id1 = models.IntegerField()
+    cam_id2 = models.IntegerField()
+    weight = models.FloatField()
+    
+    def __str__(self):
+        return f"{self.cam_id1} {self.cam_id2} {self.weight}"
