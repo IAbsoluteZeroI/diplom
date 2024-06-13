@@ -1,7 +1,10 @@
 import argparse
 import asyncio
-from model.tracker import track_video
+
 from supervision.geometry.dataclasses import Point
+
+from model.tracker import track_video
+
 
 async def main(file_path, camera_id, start, end, line_id):
     await track_video(file_path, start, end, camera_id, line_id)

@@ -1,13 +1,15 @@
 import re
-import docker
 import threading
-from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from .serializers import EventHistorySerializer
-from django.views.decorators.csrf import csrf_protect
+
+import docker
 from django.shortcuts import redirect, render, reverse
-from .models import Camera, LineCounter, Place, EventHistory, Object
+from django.views.decorators.csrf import csrf_protect
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .models import Camera, EventHistory, LineCounter, Object, Place
+from .serializers import EventHistorySerializer
 
 # from pydantic import BaseModel
 
@@ -19,14 +21,18 @@ from .models import Camera, LineCounter, Place, EventHistory, Object
 
 client = docker.from_env()
 
+
 class CameraGraphView(APIView):
     def get(self, request, cam_id):
-        camera_id=LineCounter.objects.filter(
-            id__in=LineCounter.objects.filter(camera=cam_id).values_list('line_id', flat=True)
-            ).values_list('camera', flat=True)
-        data = {'camera_id':camera_id.first()}
-        
+        camera_id = LineCounter.objects.filter(
+            id__in=LineCounter.objects.filter(camera=cam_id).values_list(
+                "line_id", flat=True
+            )
+        ).values_list("camera", flat=True)
+        data = {"camera_id": camera_id.first()}
+
         return Response(data, status=status.HTTP_200_OK)
+
 
 class CreateEvent(APIView):
     def post(self, request):
@@ -34,13 +40,13 @@ class CreateEvent(APIView):
         if serializer.is_valid():
             data = serializer.validated_data
             print(data)
-            if Object.objects.filter(name=data['object']):
+            if Object.objects.filter(name=data["object"]):
                 event = EventHistory(
-                        frame = data['frame'],
-                        object = data['object'],
-                        from_place = data['from_place'],
-                        to_place = data['to_place']
-                    )
+                    frame=data["frame"],
+                    object=data["object"],
+                    from_place=data["from_place"],
+                    to_place=data["to_place"],
+                )
                 event.save()
             return Response(data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -50,53 +56,57 @@ def collect_floors():
     cameras = Camera.objects.all()
     unique_floors = set()
     for camera in cameras:
-        floors = re.split(r'[-,\s]', camera.floor)
+        floors = re.split(r"[-,\s]", camera.floor)
         for floor in floors:
-            if floor != '5':
+            if floor != "5":
                 unique_floors.add(floor.strip())
     return unique_floors
 
 
 def floor_detail(request, floor):
     cameras_on_floor = Camera.objects.filter(
-        floor__iregex=rf'(^|[-,\s]){floor}([-,\s]|$)'
+        floor__iregex=rf"(^|[-,\s]){floor}([-,\s]|$)"
     )
-    
+
     places_on_floor = Place.objects.filter(cameras__in=cameras_on_floor).distinct()
-    
+
     places_and_cameras = {
-        place: place.cameras.filter(floor__iregex=rf'(^|[-,\s]){floor}([-,\s]|$)') for place in places_on_floor
+        place: place.cameras.filter(floor__iregex=rf"(^|[-,\s]){floor}([-,\s]|$)")
+        for place in places_on_floor
     }
 
     context = {
-        'floor': floor,
-        'places_and_cameras': places_and_cameras,
-        'floors': sorted(collect_floors()),
+        "floor": floor,
+        "places_and_cameras": places_and_cameras,
+        "floors": sorted(collect_floors()),
     }
-    return render(request, 'furniture_monitoring/floor_detail.html', context)
+    return render(request, "furniture_monitoring/floor_detail.html", context)
 
 
 def start_worker(filepath, cam_id, x1, y1, x2, y2, line_id):
     client.containers.run(
         "diplom-worker",
         [
-            "python3", "main.py",
-            "--file-path", filepath,
-            "--camera-id", str(cam_id),
-            "--start-xy", str(x1), str(y1),
-            "--end-xy", str(x2), str(y2),
-            "--line-id", str(line_id)
+            "python3",
+            "main.py",
+            "--file-path",
+            filepath,
+            "--camera-id",
+            str(cam_id),
+            "--start-xy",
+            str(x1),
+            str(y1),
+            "--end-xy",
+            str(x2),
+            str(y2),
+            "--line-id",
+            str(line_id),
         ],
         remove=True,
         name=f"worker_{cam_id}",
         network="diplom_default",
         device_requests=[docker.types.DeviceRequest(count=-1, capabilities=[["gpu"]])],
-        volumes = {
-            'diplom_media': {
-                'bind': '/app/media',
-                'mode': 'rw'
-            }
-        }
+        volumes={"diplom_media": {"bind": "/app/media", "mode": "rw"}},
     )
 
 
@@ -107,6 +117,7 @@ def stop_worker(worker_name):
         container.remove()
     except docker.errors.NotFound:
         print(f"Container {worker_name} not found.")
+
 
 def get_worker_container_numbers():
     containers = client.containers.list()
@@ -168,7 +179,7 @@ def index(request):
             pass
     else:
         context = {
-            'floors': sorted(collect_floors()),
+            "floors": sorted(collect_floors()),
         }
         context["line_counters"] = LineCounter.objects.all().order_by("id")
         context["worker_numbers"] = get_worker_container_numbers()

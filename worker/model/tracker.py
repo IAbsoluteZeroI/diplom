@@ -1,6 +1,9 @@
-import sys, os, cv2
+import os
+import sys
 from datetime import datetime
 from typing import List
+
+import cv2
 import numpy as np
 from onemetric.cv.utils.iou import box_iou_batch
 from supervision.draw.color import ColorPalette
@@ -9,6 +12,7 @@ from supervision.video.dataclasses import VideoInfo
 from supervision.video.sink import VideoSink
 from supervision.video.source import get_video_frames_generator
 from tqdm import tqdm
+
 from utils.anotator import CustomLineCounterAnnotator
 from utils.ByteTrack.yolox.tracker.byte_tracker import BYTETracker, STrack
 from utils.counter import CustomLineCounter
@@ -44,6 +48,7 @@ def match_detections_with_tracks(
 
     return tracker_ids
 
+
 def create_folder(folder_name):
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
@@ -62,7 +67,7 @@ async def track_video(video_path, start, end, camera_id, line_id) -> None:
         classes=CLASS_ID,
         camera_id=camera_id,
         class_name_dict=CLASS_NAMES_DICT,
-        line_id=line_id
+        line_id=line_id,
     )
     box_annotator = BoxAnnotator(
         color=ColorPalette(), thickness=2, text_thickness=2, text_scale=1
@@ -74,15 +79,21 @@ async def track_video(video_path, start, end, camera_id, line_id) -> None:
         class_name_dict=CLASS_NAMES_DICT,
         video_info=video_info,
     )
-    
+
     create_folder(f"/app/media/{camera_id}")
-    
-    with VideoSink(f"/app/media/{camera_id}/{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}_result.mp4", video_info) as sink:
-        for frame_num, frame in enumerate(tqdm(generator, total=video_info.total_frames)):
+
+    with VideoSink(
+        f"/app/media/{camera_id}/{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}_result.mp4",
+        video_info,
+    ) as sink:
+        for frame_num, frame in enumerate(
+            tqdm(generator, total=video_info.total_frames)
+        ):
             # model prediction on single frame and conversion to supervision Detections
-            results = model(frame,
-                            # verbose=False
-                            )
+            results = model(
+                frame,
+                # verbose=False
+            )
             detections = Detections(
                 xyxy=results[0].boxes.xyxy.cpu().numpy(),
                 confidence=results[0].boxes.conf.cpu().numpy(),
@@ -100,7 +111,9 @@ async def track_video(video_path, start, end, camera_id, line_id) -> None:
                 img_size=frame.shape,
             )
 
-            tracker_id = match_detections_with_tracks(detections=detections, tracks=tracks)
+            tracker_id = match_detections_with_tracks(
+                detections=detections, tracks=tracks
+            )
 
             detections.tracker_id = np.array(tracker_id)
 
@@ -109,12 +122,12 @@ async def track_video(video_path, start, end, camera_id, line_id) -> None:
                 dtype=bool,
             )
             detections.filter(mask=mask, inplace=True)
-            
+
             labels = [
                 f"id{tracker_id} {CLASS_NAMES_DICT[class_id]} {confidence:0.2f}"
                 for _, confidence, class_id, tracker_id in detections
             ]
-            
+
             frame = box_annotator.annotate(
                 frame=frame, detections=detections, labels=labels
             )
@@ -122,7 +135,6 @@ async def track_video(video_path, start, end, camera_id, line_id) -> None:
             await line_counter.update(detections=detections, frame_num=frame_num)
             line_annotator.annotate(frame=frame, line_counter=line_counter)
             sink.write_frame(frame)
-
 
     # with VideoSink("result.mp4", video_info) as sink:
     #     # loop over video frames

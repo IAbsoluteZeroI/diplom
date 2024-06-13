@@ -1,6 +1,7 @@
 import asyncio
-from typing import Dict, List
 import random
+from typing import Dict, List
+
 import aioredis
 import numpy as np
 from pydantic import BaseModel
@@ -34,7 +35,7 @@ class CustomLineCounter:
         self.line_id = line_id
         self.class_name_dict = class_name_dict
         self.redis = aioredis.from_url("redis://redis")
-        
+
     async def send_to_redis(self, key, value):
         # Ensure key and value are of the correct type
         key = str(key)
@@ -92,7 +93,7 @@ class CustomLineCounter:
                                 class_name=self.class_name_dict[class_id],
                                 event_type="IN",
                                 frame_num=frame_num,
-                                line_id=self.line_id
+                                line_id=self.line_id,
                             ).model_dump_json(),
                         )
                     )
@@ -107,7 +108,7 @@ class CustomLineCounter:
                                 class_name=self.class_name_dict[class_id],
                                 event_type="OUT",
                                 frame_num=frame_num,
-                                line_id=self.line_id
+                                line_id=self.line_id,
                             ).model_dump_json(),
                         )
                     )

@@ -1,6 +1,7 @@
 import os
-import django
 import time
+
+import django
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "diplom_django.settings")
 django.setup()
@@ -12,7 +13,7 @@ from django.core.management import call_command
 def clear_migrations(path):
     for filename in os.listdir(path):
         file_path = os.path.join(path, filename)
-        if os.path.isfile(file_path) and filename != '__init__.py':
+        if os.path.isfile(file_path) and filename != "__init__.py":
             os.remove(file_path)
 
 

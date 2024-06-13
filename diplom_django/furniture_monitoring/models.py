@@ -20,7 +20,7 @@ class LineCounter(models.Model):
     end_x = models.IntegerField(default=0)
     end_y = models.IntegerField(default=0)
     line_id = models.IntegerField(blank=True)
-    
+
     def __str__(self):
         return f"LineCounter {self.id} for Camera {self.camera.place.name}"
 
@@ -31,7 +31,7 @@ class Camera(models.Model):
     place = models.ForeignKey("Place", on_delete=models.CASCADE, related_name="cameras")
     floor = models.CharField(max_length=5)
     wing = models.CharField(max_length=6)
-    video_path = models.CharField(max_length=255, blank=True,default="")
+    video_path = models.CharField(max_length=255, blank=True, default="")
 
     def __str__(self):
         return f"{self.name}"
@@ -41,7 +41,7 @@ class Place(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=255, blank=True, null=True, default="")
-    
+
     def __str__(self):
         return self.name
 
@@ -51,11 +51,9 @@ class ObjectsInPlace(models.Model):
     object = models.ForeignKey(
         "Object", on_delete=models.CASCADE, related_name="object"
     )
-    place = models.ForeignKey(
-        "Place", on_delete=models.CASCADE, related_name="place"
-    )
+    place = models.ForeignKey("Place", on_delete=models.CASCADE, related_name="place")
     quantity = models.IntegerField(default=0)
-    
+
     def __str__(self):
         return f"ObjectsInPlace {self.place.name}"
 
@@ -66,6 +64,6 @@ class EventHistory(models.Model):
     object = models.CharField(max_length=100)
     from_place = models.CharField(max_length=100)
     to_place = models.CharField(max_length=100)
-    
+
     def __str__(self):
         return f"Event {self.id} at {self.frame} frame"
