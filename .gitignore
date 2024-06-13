@@ -6,5 +6,4 @@ diplom_django/furniture_monitoring/migrations/__pycache__/
 *.py[cod]
 *$py.class
 __pycache__/
-*.mp4
 yolov8m_640_80ep_16b.*
