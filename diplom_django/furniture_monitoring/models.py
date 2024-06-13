@@ -69,12 +69,3 @@ class EventHistory(models.Model):
     
     def __str__(self):
         return f"Event {self.id} at {self.frame} frame"
-    
-class CameraGraph(models.Model):
-    id = models.AutoField(primary_key=True)
-    cam_id1 = models.IntegerField()
-    cam_id2 = models.IntegerField()
-    weight = models.FloatField()
-    
-    def __str__(self):
-        return f"{self.cam_id1} {self.cam_id2} {self.weight}"

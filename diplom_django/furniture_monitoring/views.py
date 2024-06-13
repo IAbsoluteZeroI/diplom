@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from .serializers import EventHistorySerializer
 from django.views.decorators.csrf import csrf_protect
 from django.shortcuts import redirect, render, reverse
-from .models import Camera, LineCounter, Place, EventHistory, CameraGraph, Object
+from .models import Camera, LineCounter, Place, EventHistory, Object
 
 # from pydantic import BaseModel
 

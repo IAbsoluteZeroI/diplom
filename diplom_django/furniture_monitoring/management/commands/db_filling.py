@@ -1,6 +1,6 @@
 import pandas as pd
 from django.core.management.base import BaseCommand
-from ...models import Camera, Place, LineCounter, CameraGraph, Object
+from ...models import Camera, Place, LineCounter, Object
 
 class Command(BaseCommand):
     help = 'Imports from CSV files'
@@ -34,20 +34,20 @@ class Command(BaseCommand):
             )
             object.save()
             
-        # Import grapf
-        try:grapf_data = pd.read_csv('csv/graph.csv')
-        except Exception as e:
-            self.stdout.write(self.style.ERROR(f'Error reading grapf.csv: {e}'))
-            return
+        # # Import grapf
+        # try:grapf_data = pd.read_csv('csv/graph.csv')
+        # except Exception as e:
+        #     self.stdout.write(self.style.ERROR(f'Error reading grapf.csv: {e}'))
+        #     return
 
-        for _, row in grapf_data.iterrows():
-            grapf = CameraGraph(
-                id=row['id'],
-                cam_id1 = row['cam_id1'],
-                cam_id2 = row['cam_id2'],
-                weight = row['weight'],
-            )
-            grapf.save()
+        # for _, row in grapf_data.iterrows():
+        #     grapf = CameraGraph(
+        #         id=row['id'],
+        #         cam_id1 = row['cam_id1'],
+        #         cam_id2 = row['cam_id2'],
+        #         weight = row['weight'],
+        #     )
+        #     grapf.save()
 
         # Import cameras
         try:camera_data = pd.read_csv('csv/camera.csv')
