@@ -4,9 +4,12 @@
   Отслеживание по двум камерам
 {% endblock title %}
 
+{% block header_title %}
+  <h1>Отслеживание мебели по камерам</h1>
+{% endblock header_title %}
+
 {% block content %}
   <div class="main-content">
-    <h1>Отслеживание мебели по камерам</h1>
     <form method="post">
       {% csrf_token %}
       {% for line_counter in line_counters %}

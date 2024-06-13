@@ -3,6 +3,7 @@
 diplom_django/diplom_django/__pycache__/
 diplom_django/furniture_monitoring/__pycache__/
 diplom_django/furniture_monitoring/migrations/__pycache__/
+diplom_django/furniture_monitoring/media/result
 *.py[cod]
 *$py.class
 __pycache__/

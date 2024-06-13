@@ -52,9 +52,6 @@ def match_detections_with_tracks(
 def create_folder(folder_name):
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
-        print(f"Папка '{folder_name}' успешно создана")
-    else:
-        print(f"Папка '{folder_name}' уже существует")
 
 
 async def track_video(video_path, start, end, camera_id, line_id) -> None:
@@ -79,11 +76,11 @@ async def track_video(video_path, start, end, camera_id, line_id) -> None:
         class_name_dict=CLASS_NAMES_DICT,
         video_info=video_info,
     )
-
-    create_folder(f"/app/media/{camera_id}")
+    create_folder(f"/app/media/result")
+    create_folder(f"/app/media/result/{camera_id}")
 
     with VideoSink(
-        f"/app/media/{camera_id}/{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}_result.mp4",
+        f"/app/media/result/{camera_id}/{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}_result.mp4",
         video_info,
     ) as sink:
         for frame_num, frame in enumerate(

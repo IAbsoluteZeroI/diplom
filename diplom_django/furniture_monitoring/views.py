@@ -11,13 +11,16 @@ from rest_framework.views import APIView
 from .models import Camera, EventHistory, LineCounter, Object, Place
 from .serializers import EventHistorySerializer
 
-# from pydantic import BaseModel
-
-# class EventInfo(BaseModel):
-#     camera_id: int
-#     class_name: str
-#     event_type: str
-#     frame_num: int
+object_names ={
+    'person': 'Человек',
+    'chair': 'Стул',
+    'interactive whiteboard': 'Интерактивная доска',
+    'keyboard': 'Клавиатура',
+    'laptop': 'Ноутбук',
+    'monitor': 'Монитор',
+    'pc': 'Системный блок',
+    'table': 'Стол',
+}
 
 client = docker.from_env()
 

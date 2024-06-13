@@ -1,33 +1,99 @@
 {% extends 'furniture_monitoring/base.html' %}
 {% load static %}
+
 {% block title %}
-    Информация о {{ floor }} этаже
+    {% if floor.isdigit %}
+        Все события на {{ floor }} этаже
+    {% else %}
+        Все события на улице
+    {% endif %}
 {% endblock title %}
 
+{% block header_title %}
+    {% if floor.isdigit %}
+        Все события на {{ floor }} этаже
+    {% else %}
+        Все события на улице
+    {% endif %}
+{% endblock header_title %}
+
 {% block content %}
-    <div class="main-content">
-        <h1>Помещения на {{ floor }} этаже</h1>
-        <ul>
-            {% for place, cameras in places_and_cameras.items %}
-                <li>
-                    <button class="dropdown-btn">{{ place.name }}</button>
-                    <div class="dropdown-content">
-                        <ul>
-                            {% for camera in cameras %}
-                                <li>{{ camera.name }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </li>
-            {% endfor %}
-        </ul>
+    <div class="three-frame-layout">
+
+        <div class="frame left-frame">
+            <h2 class="frame-header">Выбор помещения</h1>
+            <hr size="1" color="#000000">
+            <br>
+            <ul>
+                {% if floor.isdigit %}
+                    <li>
+                        <button class="place-btn">Все события на {{floor}} этаже</button>
+                    </li>
+                {% else %}
+                    <li>
+                        <button class="place-btn">Все события на улице</button>
+                    </li>
+                {% endif %}
+                
+                {% for place, cameras in places_and_cameras.items %}
+                    <li>
+                        <button class="place-btn">{{ place.name }}</button>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="frame center-frame">
+            <h2 class="frame-header">Объекты в помещении</h2>
+            <hr size="1" color="#000000">
+            <br>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Объект</th>
+                        <th>Количество</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Стол</td>
+                        <td>8</td>
+                    </tr>
+                    <tr>
+                        <td>Человек</td>
+                        <td>10</td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="frame right-frame">
+            <h2 class="frame-header">История стобытий</h2>
+            <hr size="1" color="#000000">
+            <br>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Объект</th>
+                        <th>Перемещен из</th>
+                        <th>Перемещен в</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Стол</td>
+                        <td>24 аудитория</td>
+                        <td>2 Этаж центральный коридор</td>
+                    </tr>
+                    <tr>
+                        <td>Человек</td>
+                        <td>24 аудитория</td>
+                        <td>2 Этаж центральный коридор</td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
     </div>
 {% endblock content %}
-
-{% block css_additional %}
-<link rel="stylesheet" href="{% static 'furniture_monitoring/css/dropdown.css' %}">
-{% endblock css_additional %}
-
-{% block js_additional %}
-<script src="{% static 'furniture_monitoring/js/dropdown.js' %}"></script>
-{% endblock js_additional %}
