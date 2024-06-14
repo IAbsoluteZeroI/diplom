@@ -1,12 +1,13 @@
 import pandas as pd
 from django.core.management.base import BaseCommand
-from ...models import Camera, Place, LineCounter, Object
+from ...models import Camera, Place, LineCounter, Object, ObjectsInPlace
 
 
 class Command(BaseCommand):
     help = "Imports from CSV files"
 
     def handle(self, *args, **kwargs):
+        print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
         # Import places
         try:
             place_data = pd.read_csv("csv/place.csv")
@@ -59,7 +60,7 @@ class Command(BaseCommand):
             return
 
         for _, row in camera_data.iterrows():
-            place_id = row.get("place") + 1
+            place_id = int(row.get("place")) + 1
             place = (
                 Place.objects.get(id=place_id)
                 if place_id and not pd.isna(place_id)
@@ -128,3 +129,31 @@ class Command(BaseCommand):
                         f"Linecounter for camera {camera_id} with these coordinates already exists"
                     )
                 )
+        try:
+            objects_in_place_data = pd.read_csv("csv/objects_in_place.csv")
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f"Error reading objects_in_place.csv: {e}"))
+            return
+
+        for _, row in objects_in_place_data.iterrows():
+            object_id = row.get("object_id")
+            place_id = row.get("place_id")
+            quantity = row.get("count", 0)
+
+            # Проверяем, что объект и место существуют
+            try:
+                object_instance = Object.objects.get(id=object_id)
+                place_instance = Place.objects.get(id=place_id)
+            except Object.DoesNotExist:
+                self.stdout.write(self.style.WARNING(f"Object with id {object_id} does not exist"))
+                continue
+            except Place.DoesNotExist:
+                self.stdout.write(self.style.WARNING(f"Place with id {place_id} does not exist"))
+                continue
+
+            objects_in_place = ObjectsInPlace(
+                object=object_instance,
+                place=place_instance,
+                quantity=quantity,
+            )
+            objects_in_place.save()

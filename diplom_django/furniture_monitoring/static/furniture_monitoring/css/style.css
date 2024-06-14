@@ -204,12 +204,12 @@ button:hover, input[type="submit"]:hover {
 }
 
 .center-frame{
-    max-width: 40%; /* Each frame takes one third of the space */
+    max-width: 20%; /* Each frame takes one third of the space */
     margin: 10px;
 }
 
 .right-frame {
-    max-width: 45%; /* Each frame takes one third of the space */
+    max-width: 65%; /* Each frame takes one third of the space */
     margin: 10px;
 }
 

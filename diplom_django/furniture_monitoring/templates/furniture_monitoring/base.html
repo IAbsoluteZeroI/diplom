@@ -1,4 +1,5 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -10,21 +11,19 @@
     {% block css_additional %}
     {% endblock css_additional %}
     <title>
-        {% block title %}
-        {% endblock title %}
+        {% block title %}{% endblock title %}
     </title> 
 </head>
 <body>
     <div class="header">
         <h1>
-            {% block header_title %}
-            {% endblock header_title %}
+            {% block header_title %}{% endblock header_title %}
         </h1>
     </div>
 
     <div class="sidebar">
         <ul>
-            <li><a href="{% url 'index'%}">Home</a></li>
+            <li><a href="{% url 'index' %}">Home</a></li>
             <hr size="2" color="#0087c0">
             {% for floor in floors %}
                 {% if floor.isdigit %}
@@ -41,5 +40,7 @@
 
     {% block js_additional %}
     {% endblock js_additional %}
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </body>
 </html>

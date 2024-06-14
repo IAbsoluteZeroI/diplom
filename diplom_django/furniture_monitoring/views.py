@@ -1,15 +1,16 @@
 import re
-import threading
-
+import math
 import docker
-from django.shortcuts import redirect, render, reverse
-from django.views.decorators.csrf import csrf_protect
+import threading
+from django.db.models import Q
 from rest_framework import status
-from rest_framework.response import Response
+from django.http import JsonResponse
 from rest_framework.views import APIView
-
-from .models import Camera, EventHistory, LineCounter, Object, Place
+from rest_framework.response import Response
 from .serializers import EventHistorySerializer
+from django.views.decorators.csrf import csrf_protect
+from django.shortcuts import redirect, render, reverse
+from .models import Camera, EventHistory, LineCounter, Object, Place, ObjectsInPlace
 
 object_names ={
     'person': 'Человек',
@@ -23,7 +24,6 @@ object_names ={
 }
 
 client = docker.from_env()
-
 
 class CameraGraphView(APIView):
     def get(self, request, cam_id):
@@ -43,6 +43,7 @@ class CreateEvent(APIView):
         if serializer.is_valid():
             data = serializer.validated_data
             print(data)
+            update_object_quantity(data)
             if Object.objects.filter(name=data["object"]):
                 event = EventHistory(
                     frame=data["frame"],
@@ -55,6 +56,32 @@ class CreateEvent(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+def update_object_quantity(data):
+    
+    object_instance = (
+        Object.objects.get(name=data['object'])
+        )
+    from_place_instance = (
+        Place.objects.get( id=CameraIdToPlaceID(data['from_place']))
+        )
+    to_place_instance = (
+        Place.objects.get(id=CameraIdToPlaceID(data['to_place']))
+        )
+
+    objects_in_from_place = ObjectsInPlace.objects.get(
+        object=object_instance.id,
+        place=from_place_instance.id)
+    print(objects_in_from_place)
+    objects_in_from_place.quantity -= 1
+    objects_in_from_place.save()
+    
+    objects_in_to_place = ObjectsInPlace.objects.get(
+        object=object_instance.id,
+        place=to_place_instance.id)
+    print(objects_in_to_place)
+    objects_in_to_place.quantity += 1
+    objects_in_to_place.save()
+
 def collect_floors():
     cameras = Camera.objects.all()
     unique_floors = set()
@@ -65,14 +92,61 @@ def collect_floors():
                 unique_floors.add(floor.strip())
     return unique_floors
 
+def CameraIdToPlaceID(id):
+    place_id=Camera.objects.filter(id=id).values_list("place_id", flat=True).first()
+    return place_id
 
+def CameraIdToPlaceName(id):
+    place_name = Place.objects.filter(
+        id=Camera.objects.filter(id=id).values_list("place_id", flat=True).first()
+        ).values_list("name", flat=True ).first()
+    return place_name
+
+def GetPlaceName(id):
+    place_name = Place.objects.filter(id=id).values_list("name", flat=True ).first()
+    return place_name
+
+@csrf_protect
 def floor_detail(request, floor):
+    
+    if request.method == "POST" and request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        place_id = request.POST.get("place_id")
+        if place_id:
+            
+            context = {'place_id': GetPlaceName(place_id)}
+            
+            camera_ids = list(map(str, Camera.objects.filter(place_id=place_id).values_list("id", flat=True)))
+            events = EventHistory.objects.filter(
+                Q(from_place__in=camera_ids) | Q(to_place__in=camera_ids)
+            ).order_by("id")
+            event_data = []
+            for event in events:
+                event_data.append({
+                    'object': object_names[event.object],
+                    'from_place': CameraIdToPlaceName(event.from_place),
+                    'to_place': CameraIdToPlaceName(event.to_place),
+                    'frame': f"{math.ceil(event.frame/30)} секунда"
+                })
+
+            items = ObjectsInPlace.objects.filter(place_id=place_id).order_by("id")
+            
+            item_data = []
+            for item in items:
+                item_data.append({
+                    'object': object_names[item.object.name],
+                    'count': item.quantity,
+                })
+
+            context["events"] = 0 if len(event_data) == 0 else event_data
+            context["items"] = 0 if len(item_data) == 0 else item_data
+
+            return JsonResponse(context)
+
     cameras_on_floor = Camera.objects.filter(
         floor__iregex=rf"(^|[-,\s]){floor}([-,\s]|$)"
     )
-
     places_on_floor = Place.objects.filter(cameras__in=cameras_on_floor).distinct()
-
+    
     places_and_cameras = {
         place: place.cameras.filter(floor__iregex=rf"(^|[-,\s]){floor}([-,\s]|$)")
         for place in places_on_floor
@@ -82,7 +156,10 @@ def floor_detail(request, floor):
         "floor": floor,
         "places_and_cameras": places_and_cameras,
         "floors": sorted(collect_floors()),
+        "events": 0,
+        "items": 0
     }
+
     return render(request, "furniture_monitoring/floor_detail.html", context)
 
 

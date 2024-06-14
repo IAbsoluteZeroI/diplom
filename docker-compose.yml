@@ -12,7 +12,7 @@ services:
       - DJANGO_SUPERUSER_EMAIL=kurwabober@example.com
     command: >
       bash -c "
-      python3 run.py"
+      python3 init.py && python3 run.py"
     volumes:
       - ./diplom_django:/app 
       - //var/run/docker.sock:/var/run/docker.sock
